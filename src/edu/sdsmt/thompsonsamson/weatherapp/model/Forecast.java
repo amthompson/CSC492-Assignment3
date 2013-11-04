@@ -21,7 +21,7 @@ import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
 public class Forecast implements Parcelable
 {
 
-	private static final String TAG = "";
+	private static final String TAG = "WeatherApp";
 	
 	// http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
 	// NOTE:  See example JSON in doc folder.
@@ -32,7 +32,7 @@ public class Forecast implements Parcelable
 	// http://developer.weatherbug.com/docs/read/List_of_Icons
 		
 	private String _imageURL = "http://img.weather.weatherbug.com/forecast/icons/localized/500x420/en/trans/%s.png";
-	
+	 
 	public Forecast()
 	{
 	}
@@ -40,7 +40,7 @@ public class Forecast implements Parcelable
 	public Forecast(Parcel parcel)
 	{
 		
-	}
+	} 
 
 	@Override
 	public int describeContents()
