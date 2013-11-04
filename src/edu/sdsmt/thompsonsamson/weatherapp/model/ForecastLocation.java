@@ -9,7 +9,7 @@ public class ForecastLocation
 	// http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
 	// NOTE:  See example JSON in doc folder.
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
-			             "&api_key=q3wj56tqghv7ybd8dy6gg4e7";
+			             "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
 	
 
 	public ForecastLocation()

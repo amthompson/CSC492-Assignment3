@@ -27,7 +27,7 @@ public class Forecast implements Parcelable
 	// NOTE:  See example JSON in doc folder.
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetForecastHourly.ashx?zip=" + "%s" + 
 	                      "&ht=t&ht=i&ht=cp&ht=fl&ht=h" + 
-	                      "&api_key=q3wj56tqghv7ybd8dy6gg4e7";
+	                      "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
 	
 	// http://developer.weatherbug.com/docs/read/List_of_Icons
 		
