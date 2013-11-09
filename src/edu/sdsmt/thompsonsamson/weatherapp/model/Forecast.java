@@ -39,7 +39,8 @@ public class Forecast implements Parcelable
 
 	public Forecast(Parcel parcel)
 	{
-		
+		// pull values from parcel -- IN ORDER!
+		// Zipcode = parcel.readString();
 	}
 
 	@Override

@@ -1,7 +1,10 @@
 package edu.sdsmt.thompsonsamson.weatherapp.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class ForecastLocation
+
+public class ForecastLocation implements Parcelable
 {
 
 	private static final String TAG = "";
@@ -11,19 +14,33 @@ public class ForecastLocation
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
 			             "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
 	
-
-	public ForecastLocation()
+	// - needs own asynch task
+	// - implement parceable interface
+	
+	public ForecastLocation(Parcel parcel)
 	{
 		ZipCode = null;
 		City = null;
 		State = null;
 		Country = null;
-		CurrentForecast = null;
 	}
 
 	public String ZipCode;
 	public String City;
 	public String State;
 	public String Country;
-	public Forecast CurrentForecast;
+
+	@Override
+	public int describeContents() 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
+	public void writeToParcel(Parcel dest, int flags)
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }
