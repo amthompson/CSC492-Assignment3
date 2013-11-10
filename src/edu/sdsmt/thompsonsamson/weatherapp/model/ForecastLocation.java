@@ -15,19 +15,18 @@ import android.util.JsonReader;
 import android.util.Log;
 
 
-public class ForecastLocation 
+public class ForecastLocation implements Parcelable
 {
-
 	private static final String TAG = "";
 	
-	// http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
-	// NOTE:  See example JSON in doc folder.
+	public String ZipCode;
+	public String City;
+	public String State;
+	public String Country;
+	
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
 			             "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
-	
-	// - needs own asynch task
-	// - implement parceable interface
-	
+		
 	public ForecastLocation()
 	{
 		ZipCode = null;
@@ -35,41 +34,56 @@ public class ForecastLocation
 		State = null;
 		Country = null;
 	}
+	
+	public ForecastLocation(Parcel parcel)
+	{
+		ZipCode = parcel.readString();
+		City = parcel.readString();
+		State = parcel.readString();
+		Country = parcel.readString();
+	}
+	
+	public static final Parcelable.Creator<ForecastLocation> CREATOR = new Parcelable.Creator<ForecastLocation>() 
+	{
+		@Override
+		public ForecastLocation createFromParcel(Parcel source) {
+			return new ForecastLocation(source);
+		}
 
-	public String ZipCode;
-	public String City;
-	public String State;
-	public String Country;
+		@Override
+		public ForecastLocation[] newArray(int size) {
+			return new ForecastLocation[size];
+		}
+	};
+	
 	
 	public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
 	{
 		private IListeners _listener;
 		private Context _context;
 		
-		
 		public LoadForecastLocation(Context context, IListeners listener)
-		{
+		{	
 			_context = context;
 			_listener = listener;
-			
 		}
 		
 		@Override
 		protected ForecastLocation doInBackground(String... params) {
 			ForecastLocation forecastLocation = null;
 			URL url = null;
+			Reader streamReader = null;
 			
-			//try catchfor url
+			//try catch for url
 			try 
 			{
-				url = new URL(String.format(_URL, params));
+				url = new URL(String.format(_URL, (Object[]) params));
 			} 
 			catch (MalformedURLException e1) 
 			{
 				e1.printStackTrace();
 			}
 			
-			Reader streamReader = null;
 			//try catch for reader
 			try 
 			{
@@ -85,19 +99,26 @@ public class ForecastLocation
 				Log.d("Assignment3", "general error");
 				e2.printStackTrace();
 			}
+			
+			// set the reader to the stream
 			JsonReader jsonReader = new JsonReader(streamReader);
 			
 			// try catch to read json
 			try 
 			{
+				// start at the first object
 				jsonReader.beginObject();
 				
+				// get the first node name
 				String name = jsonReader.nextName();
 				
+				// if the node is location, get the data
 				if (name.equals("location") == true)
 				{
+					// start at the first object in location
 					jsonReader.beginObject();
 					
+					// fill the class member with json data
 					while (jsonReader.hasNext())
 					{
 						name = jsonReader.nextName();
@@ -121,7 +142,16 @@ public class ForecastLocation
 							jsonReader.skipValue();
 						}
 					}
+					
+					// end location object
+					jsonReader.endObject();
 				}
+				
+				// end parent object
+				jsonReader.endObject();
+				
+				// close the reader
+				jsonReader.close();
 			}
 			catch (IllegalStateException e)
 			{
@@ -132,19 +162,38 @@ public class ForecastLocation
 				Log.e(TAG, e.toString());
 			}
 			
+			// return the object to parent class			
 			return forecastLocation;
-			
 		}
 		
+		/**
+		 * Returns the forecast location to the listener
+		 * @param forecastLocation the location returned from the API call
+		 */
 		@Override
 		protected void onPostExecute(ForecastLocation forecastLocation)
 		{
-			super.onPostExecute(forecastLocation);
-			
-			Log.d("Assignemet3", "onPostExecute, ForecastLocation");
-			
+			super.onPostExecute(forecastLocation);			
 			_listener.onLocationLoaded(forecastLocation);
 		}
-		
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public void writeToParcel(Parcel parcel, int flags) {
+		parcel.writeString(ZipCode);
+		parcel.writeString(City);
+		parcel.writeString(State);
+		parcel.writeString(Country);
 	}
 }
