@@ -7,6 +7,10 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,6 +26,12 @@ public class Forecast implements Parcelable
 {
 
 	private static final String TAG = "";
+	public String Icon;
+	public String Temperature;
+	public String FeelsLike;
+	public String Humidity;
+	public String ChancePrecip;
+	public String ForecastDate;
 	
 	// http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
 	// NOTE:  See example JSON in doc folder.
@@ -33,13 +43,31 @@ public class Forecast implements Parcelable
 		
 	private String _imageURL = "http://img.weather.weatherbug.com/forecast/icons/localized/500x420/en/trans/%s.png";
 	
+	
+	public Bitmap Image;
+	
 	public Forecast()
 	{
+		Icon = null;
+		Temperature = null;
+		FeelsLike = null;
+		Humidity = null;
+		ChancePrecip = null;
+		ForecastDate = null;
+		Image = null;
 	}
 
 	public Forecast(Parcel parcel)
 	{
-		
+		// pull values from parcel -- IN ORDER!
+		// Zipcode = parcel.readString();
+		Image = parcel.readParcelable(Bitmap.class.getClassLoader());
+		Icon = null;
+		Temperature = null;
+		FeelsLike = null;
+		Humidity = null;
+		ChancePrecip = null;
+		ForecastDate = null;
 	}
 
 	@Override
@@ -84,14 +112,85 @@ public class Forecast implements Parcelable
 		protected Forecast doInBackground(String... params)
 		{
 			Forecast forecast = null;
+			URL url = null;
+			
+			// try catch for url
+			try 
+			{
+				url = new URL(String.format(_URL, params));
+			} 
+			catch (MalformedURLException e1) 
+			{
+				e1.printStackTrace();
+			}
+			
+			Reader streamReader = null;
+			
+			//try catch for reader
+			try 
+			{
+				streamReader = new InputStreamReader(url.openStream());
+				
+			} 
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			catch (Exception e2)
+			{
+				Log.d("Assignment3", "general error");
+				e2.printStackTrace();
+			}
 
+			JsonReader jsonReader = new JsonReader(streamReader);
+		
+			// try catch for json
 			try
 			{
-				// HINT: You will use the following classes to make API call.
-				//		 URL
-				//       InputStreamReader
-				//       JsonReader
-
+				jsonReader.beginObject();
+				
+				String name = jsonReader.nextName();
+				
+				if (name.equals("forecastHourlyList") == true)
+				{
+					jsonReader.beginArray();			
+					jsonReader.beginObject();
+					while (jsonReader.hasNext())
+					{
+						//jsonReader.beginObject();
+						name = jsonReader.nextName();
+						
+						if (name.equals("icon") == true)
+						{
+							Icon = jsonReader.nextString();
+						}
+						else if (name.equals("temperature") == true)
+						{
+							Temperature = jsonReader.nextString();
+						}
+						else if (name.equals("feelsLike") == true)
+						{
+							FeelsLike = jsonReader.nextString();
+						}else if (name.equals("humidity") == true)
+						{
+							Humidity = jsonReader.nextString();
+						}else if (name.equals("chancePrecip") == true)
+						{
+							ChancePrecip = jsonReader.nextString();
+						}else if (name.equals("dateTime") == true)
+						{
+							ForecastDate = jsonReader.nextString();
+						}else 
+						{
+							jsonReader.skipValue();
+						}
+					}
+					jsonReader.endArray();
+					jsonReader.endObject();
+				}
+				jsonReader.endObject();
+				
 			}
 			catch (IllegalStateException e)
 			{
@@ -101,7 +200,8 @@ public class Forecast implements Parcelable
 			{
 				Log.e(TAG, e.toString());
 			}
-
+			
+			
 			return forecast;
 		}
 
@@ -141,38 +241,4 @@ public class Forecast implements Parcelable
 			return iconBitmap;
 		}
 	}
-
-	private byte[] convertBitmapToByteArray(Bitmap image)
-	{
-		// HINT:  Helper method to drive using Bitmap with the 
-		//        Parcelable implementation.
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		image.compress(Bitmap.CompressFormat.PNG, 100, stream);
-		byte[] byteArray = stream.toByteArray();
-
-		try
-		{
-			stream.close();
-		}
-		catch (IOException e)
-		{
-			Log.e(TAG, e.toString());
-		}
-		finally
-		{
-			stream = null;
-			byteArray = null;
-		}
-
-		return byteArray;
-	}
-
-	private Bitmap convertByteArrayToBitmap(byte[] data)
-	{
-		// HINT:  Helper method to drive using Bitmap with the 
-		//        Parcelable implementation.
-		Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-		return bitmap;
-	}
-
 }

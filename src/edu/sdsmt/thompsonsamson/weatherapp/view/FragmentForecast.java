@@ -16,11 +16,20 @@ public class FragmentForecast extends Fragment
 	public void onCreate(Bundle argumentsBundle)
 	{
 		super.onCreate(argumentsBundle);
+		
+		// pull location/forecast from bundle
+		// if argumentsBundle != null get from bundle (frag destroyed/state saved)
+		// else retrieve from host activity
+		
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceStateBundle)
 	{
+		
+		// save the location/forecast to bundle
+		// savedInstanceStateBundle.putParcelable
+		
 		super.onSaveInstanceState(savedInstanceStateBundle);
 	}
 
