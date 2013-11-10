@@ -1,10 +1,21 @@
 package edu.sdsmt.thompsonsamson.weatherapp.model;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.JsonReader;
+import android.util.Log;
 
 
-public class ForecastLocation implements Parcelable
+public class ForecastLocation 
 {
 
 	private static final String TAG = "";
@@ -17,7 +28,7 @@ public class ForecastLocation implements Parcelable
 	// - needs own asynch task
 	// - implement parceable interface
 	
-	public ForecastLocation(Parcel parcel)
+	public ForecastLocation()
 	{
 		ZipCode = null;
 		City = null;
@@ -29,18 +40,111 @@ public class ForecastLocation implements Parcelable
 	public String City;
 	public String State;
 	public String Country;
-
-	@Override
-	public int describeContents() 
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
 	
-	@Override
-	public void writeToParcel(Parcel dest, int flags)
+	public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
 	{
-		// TODO Auto-generated method stub
+		private IListeners _listener;
+		private Context _context;
+		
+		
+		public LoadForecastLocation(Context context, IListeners listener)
+		{
+			_context = context;
+			_listener = listener;
+			
+		}
+		
+		@Override
+		protected ForecastLocation doInBackground(String... params) {
+			ForecastLocation forecastLocation = null;
+			URL url = null;
+			
+			//try catchfor url
+			try 
+			{
+				url = new URL(String.format(_URL, params));
+			} 
+			catch (MalformedURLException e1) 
+			{
+				e1.printStackTrace();
+			}
+			
+			Reader streamReader = null;
+			//try catch for reader
+			try 
+			{
+				streamReader = new InputStreamReader(url.openStream());
+			} 
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			catch (Exception e2)
+			{
+				Log.d("Assignment3", "general error");
+				e2.printStackTrace();
+			}
+			JsonReader jsonReader = new JsonReader(streamReader);
+			
+			// try catch to read json
+			try 
+			{
+				jsonReader.beginObject();
+				
+				String name = jsonReader.nextName();
+				
+				if (name.equals("location") == true)
+				{
+					jsonReader.beginObject();
+					
+					while (jsonReader.hasNext())
+					{
+						name = jsonReader.nextName();
+						
+						if (name.equals("city") == true)
+						{
+							City = jsonReader.nextString();
+						}
+						else if (name.equals("state") == true)
+						{
+							State = jsonReader.nextString();
+						}
+						else if (name.equals("country") == true)
+						{
+							Country = jsonReader.nextString();
+						}else if (name.equals("zipCode") == true)
+						{
+							ZipCode = jsonReader.nextString();
+						}else 
+						{
+							jsonReader.skipValue();
+						}
+					}
+				}
+			}
+			catch (IllegalStateException e)
+			{
+				Log.e(TAG, e.toString() + params[0]);
+			}
+			catch (Exception e)
+			{
+				Log.e(TAG, e.toString());
+			}
+			
+			return forecastLocation;
+			
+		}
+		
+		@Override
+		protected void onPostExecute(ForecastLocation forecastLocation)
+		{
+			super.onPostExecute(forecastLocation);
+			
+			Log.d("Assignemet3", "onPostExecute, ForecastLocation");
+			
+			_listener.onLocationLoaded(forecastLocation);
+		}
 		
 	}
 }
