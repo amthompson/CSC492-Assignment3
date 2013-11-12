@@ -20,7 +20,9 @@ import android.os.Parcelable;
 import android.text.format.DateUtils;
 import android.util.JsonReader;
 import android.util.Log;
+import android.widget.Toast;
 import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
+import edu.sdsmt.thompsonsamson.weatherapp.R;
 
 public class Forecast implements Parcelable
 {
@@ -121,6 +123,7 @@ public class Forecast implements Parcelable
 			} 
 			catch (MalformedURLException e1) 
 			{
+				Toast.makeText(_context, R.string.toastUrlError, Toast.LENGTH_LONG).show();
 				e1.printStackTrace();
 			}
 			
@@ -134,12 +137,12 @@ public class Forecast implements Parcelable
 			} 
 			catch (IOException e1)
 			{
-				// TODO Auto-generated catch block
+				Toast.makeText(_context, R.string.toastIoError, Toast.LENGTH_LONG).show();
 				e1.printStackTrace();
 			}
 			catch (Exception e2)
 			{
-				Log.d("Assignment3", "general error");
+				Toast.makeText(_context, R.string.toastGeneralError, Toast.LENGTH_LONG).show();
 				e2.printStackTrace();
 			}
 
@@ -194,10 +197,12 @@ public class Forecast implements Parcelable
 			}
 			catch (IllegalStateException e)
 			{
+				Toast.makeText(_context, R.string.toastStateError, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString() + params[0]);
 			}
 			catch (Exception e)
 			{
+				Toast.makeText(_context, R.string.toastNullData, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString());
 			}
 			
@@ -227,14 +232,17 @@ public class Forecast implements Parcelable
 			}
 			catch (MalformedURLException e)
 			{
+				Toast.makeText(_context, R.string.toastUrlError, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString());
 			}
 			catch (IOException e)
 			{
+				Toast.makeText(_context, R.string.toastIoError, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString());
 			}
 			catch (Exception e)
 			{
+				Toast.makeText(_context, R.string.toastGeneralError, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString());
 			}
 

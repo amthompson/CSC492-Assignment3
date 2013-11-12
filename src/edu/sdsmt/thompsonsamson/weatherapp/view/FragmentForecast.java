@@ -68,7 +68,6 @@ public class FragmentForecast extends Fragment
 			
 			LoadForecastLocation loadForecastLocation = _forecastLocation.new LoadForecastLocation(getActivity(), new HandleAPICallListener());
 			loadForecastLocation.execute(ZipCode);	
-			
 			LoadForecast loadForecast = _forecast.new LoadForecast(getActivity(), new HandleAPICallListener());
 			loadForecast.execute(ZipCode);
 		}

@@ -7,12 +7,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
+import edu.sdsmt.thompsonsamson.weatherapp.R;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.JsonReader;
 import android.util.Log;
+import android.widget.Toast;
 
 
 public class ForecastLocation 
@@ -66,6 +68,7 @@ public class ForecastLocation
 			} 
 			catch (MalformedURLException e1) 
 			{
+				Toast.makeText(_context, R.string.toastUrlError, Toast.LENGTH_LONG).show();
 				e1.printStackTrace();
 			}
 			
@@ -77,12 +80,12 @@ public class ForecastLocation
 			} 
 			catch (IOException e1)
 			{
-				// TODO Auto-generated catch block
+				Toast.makeText(_context, R.string.toastIoError, Toast.LENGTH_LONG).show();
 				e1.printStackTrace();
 			}
 			catch (Exception e2)
 			{
-				Log.d("Assignment3", "general error");
+				Toast.makeText(_context, R.string.toastGeneralError, Toast.LENGTH_LONG).show();
 				e2.printStackTrace();
 			}
 			JsonReader jsonReader = new JsonReader(streamReader);
@@ -125,10 +128,12 @@ public class ForecastLocation
 			}
 			catch (IllegalStateException e)
 			{
+				Toast.makeText(_context, R.string.toastStateError, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString() + params[0]);
 			}
 			catch (Exception e)
 			{
+				Toast.makeText(_context, R.string.toastNullData, Toast.LENGTH_LONG).show();
 				Log.e(TAG, e.toString());
 			}
 			
@@ -141,7 +146,7 @@ public class ForecastLocation
 		{
 			super.onPostExecute(forecastLocation);
 			
-			Log.d("Assignemet3", "onPostExecute, ForecastLocation");
+			Log.d("Assignmet3", "onPostExecute, ForecastLocation");
 			
 			_listener.onLocationLoaded(forecastLocation);
 		}
