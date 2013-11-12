@@ -1,11 +1,12 @@
 package edu.sdsmt.thompsonsamson.weatherapp.view;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
-
 import android.app.Fragment;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
 import edu.sdsmt.thompsonsamson.weatherapp.R;
 import edu.sdsmt.thompsonsamson.weatherapp.model.Forecast;
@@ -59,12 +61,14 @@ public class FragmentForecast extends Fragment
 	public class HandleAPICallListener implements IListeners
 	{
 		@Override
-		public void onLocationLoaded(ForecastLocation forecastLocation) {
+		public void onLocationLoaded(ForecastLocation forecastLocation) 
+		{
 			_forecastLocation = forecastLocation;
 		}
 
 		@Override
-		public void onForecastLoaded(Forecast forecast) {
+		public void onForecastLoaded(Forecast forecast) 
+		{
 			_forecast = forecast;
 		}
 	}
@@ -116,13 +120,22 @@ public class FragmentForecast extends Fragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		View rootView = inflater.inflate(R.layout.fragment_forecast, null);
-
+		
 		// setup ui objects
 		configureTextFields(rootView);
 		
 		return rootView;
 	}
-
+	
+	private boolean networkOnline() 
+	{
+		ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo != null && netInfo.isConnectedOrConnecting())
+			return true;
+		return false;
+	}
+	
 	/**
 	 * 
 	 * @param savedInstanceStateBundle
@@ -132,11 +145,17 @@ public class FragmentForecast extends Fragment
 	{
 		super.onActivityCreated(savedInstanceStateBundle);
 
-		// get the location and forecast from api calls
-		if( makeAPICalls() )
+		if ( !networkOnline() )
 		{
-			populateTextFields();
-			Log.d(TAG, "onActivityCreated: " + _forecast.ForecastDate);
+			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+		}
+		else
+		{
+			// get the location and forecast from api calls
+			if( makeAPICalls() )
+			{
+				populateTextFields();
+			}
 		}
 		
 		// restore data from bundle
@@ -179,10 +198,15 @@ public class FragmentForecast extends Fragment
 		catch (InterruptedException e) 
 		{
 			e.printStackTrace();
-		} catch (ExecutionException e) 
+			return false;
+		} 
+		catch (ExecutionException e) 
 		{
-			e.printStackTrace();
+			Toast.makeText(getActivity(), "LoadForecastLocation:ExecutionException", Toast.LENGTH_LONG).show();
+			return false;
 		}
+		
+		Log.d(TAG, "Forecast Location Loaded: " + _forecastLocation.City);
 		
 		// make the api call to get the forecast data
 		LoadForecast loadForecast = _forecast.new LoadForecast(getActivity(), new HandleAPICallListener());
@@ -196,10 +220,16 @@ public class FragmentForecast extends Fragment
 		catch (InterruptedException e) 
 		{
 			e.printStackTrace();
-		} catch (ExecutionException e) 
+			return false;
+		} 
+		catch (ExecutionException e) 
 		{
+			Toast.makeText(getActivity(), "LoadForecast:ExecutionException", Toast.LENGTH_LONG).show();
 			e.printStackTrace();
+			return false;
 		}
+
+		Log.d(TAG, "Forecast Loaded: " + _forecast.ForecastDate);
 		
 		return true;
 	}

@@ -62,7 +62,7 @@ public final class R {
         public static final int labelTemp=0x7f050002;
         public static final int pendingWebCall=0x7f050007;
         public static final int progressMessage=0x7f050008;
-        public static final int toastNullData=0x7f050009;
+        public static final int toastNetworkUnavaliable=0x7f050009;
     }
     public static final class style {
         /** 

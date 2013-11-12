@@ -35,7 +35,7 @@ public class MainActivity extends Activity
             showForecast(TextUtils.split(_citiesArray[0], "\\|")[0]);        	
         }
 	}
-	
+
 	/**
 	 * 
 	 * @param zipCode
@@ -55,7 +55,7 @@ public class MainActivity extends Activity
 		{
 			fragmentForecast = new FragmentForecast();
 		}
-
+		
 		// send the bundle to the view and call it
 		fragmentForecast.setArguments(bundle);
 		fragmentManager.beginTransaction()

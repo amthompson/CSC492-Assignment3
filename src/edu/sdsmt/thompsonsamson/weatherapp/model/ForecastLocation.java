@@ -14,7 +14,12 @@ import android.os.Parcelable;
 import android.util.JsonReader;
 import android.util.Log;
 
-
+/**
+ * 
+ * @author Andrew Thompson
+ * @author Scott Samson
+ *
+ */
 public class ForecastLocation implements Parcelable
 {
 	private static final String TAG = "Assignment3:ForecastLocation";
@@ -27,6 +32,9 @@ public class ForecastLocation implements Parcelable
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
 			             "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
 		
+	/**
+	 * 
+	 */
 	public ForecastLocation()
 	{
 		ZipCode = null;
@@ -35,6 +43,10 @@ public class ForecastLocation implements Parcelable
 		Country = null;
 	}
 	
+	/**
+	 * 
+	 * @param parcel
+	 */
 	public ForecastLocation(Parcel parcel)
 	{
 		ZipCode = parcel.readString();
@@ -62,6 +74,9 @@ public class ForecastLocation implements Parcelable
 		parcel.writeString(Country);
 	}
 
+	/**
+	 * 
+	 */
 	public static final Parcelable.Creator<ForecastLocation> CREATOR = new Parcelable.Creator<ForecastLocation>() 
 	{
 		@Override
@@ -75,18 +90,32 @@ public class ForecastLocation implements Parcelable
 		}
 	};
 	
-	
+	/**
+	 * 
+	 * @author Scott Samson
+	 *
+	 */
 	public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
 	{
+		//private Context _context;
 		private IListeners _listener;
-		private Context _context;
 		
+		/**
+		 * 
+		 * @param context
+		 * @param listener
+		 */
 		public LoadForecastLocation(Context context, IListeners listener)
-		{	
-			_context = context;
+		{
+			//_context = context;
 			_listener = listener;
 		}
 		
+		/**
+		 * 
+		 * @param params
+		 * 
+		 */
 		@Override
 		protected ForecastLocation doInBackground(String... params) {
 			ForecastLocation forecastLocation = null;
@@ -98,9 +127,9 @@ public class ForecastLocation implements Parcelable
 			{
 				url = new URL(String.format(_URL, (Object[]) params));
 			} 
-			catch (MalformedURLException e1) 
+			catch (MalformedURLException e) 
 			{
-				e1.printStackTrace();
+				Log.e(TAG, "MalformedURLException: " + e.toString());
 			}
 			
 			//try catch for reader
@@ -108,14 +137,13 @@ public class ForecastLocation implements Parcelable
 			{
 				streamReader = new InputStreamReader(url.openStream());
 			} 
-			catch (IOException e1)
+			catch (IOException e)
 			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				Log.e(TAG, "IOException: " + e.toString());
 			}
-			catch (Exception e2)
+			catch (Exception e)
 			{
-				e2.printStackTrace();
+				Log.e(TAG, "Exception: " + e.toString());
 			}
 			
 			// set the reader to the stream
@@ -173,11 +201,11 @@ public class ForecastLocation implements Parcelable
 			}
 			catch (IllegalStateException e)
 			{
-				Log.e(TAG, e.toString() + params[0]);
+				Log.e(TAG, "IllegalStateException: " + e.toString());
 			}
 			catch (Exception e)
 			{
-				Log.e(TAG, e.toString());
+				Log.e(TAG, "Exception: " + e.toString());
 			}
 			
 			// return the object to parent class			
@@ -191,7 +219,7 @@ public class ForecastLocation implements Parcelable
 		@Override
 		protected void onPostExecute(ForecastLocation forecastLocation)
 		{
-			super.onPostExecute(forecastLocation);			
+			super.onPostExecute(forecastLocation);
 			_listener.onLocationLoaded(forecastLocation);
 		}
 	}
