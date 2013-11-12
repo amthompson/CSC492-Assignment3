@@ -1,54 +1,53 @@
 package edu.sdsmt.thompsonsamson.weatherapp.model;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.format.DateUtils;
 import android.util.JsonReader;
 import android.util.Log;
 import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
 
+/**
+ * 
+ * @author Andrew Thompson
+ * @author Scott Samson
+ *
+ */
 public class Forecast implements Parcelable
 {
 
-	private static final String TAG = "";
+	private static final String TAG = "Assignment3:Forecast";
+	
 	public String Icon;
+	public String Conditions;
 	public String Temperature;
 	public String FeelsLike;
 	public String Humidity;
 	public String ChancePrecip;
 	public String ForecastDate;
+	public Bitmap Image;
 	
-	// http://developer.weatherbug.com/docs/read/WeatherBug_API_JSON
-	// NOTE:  See example JSON in doc folder.
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetForecastHourly.ashx?zip=" + "%s" + 
 	                      "&ht=t&ht=i&ht=cp&ht=fl&ht=h" + 
 	                      "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
-	
-	// http://developer.weatherbug.com/docs/read/List_of_Icons
-		
+			
 	private String _imageURL = "http://img.weather.weatherbug.com/forecast/icons/localized/500x420/en/trans/%s.png";
 	
-	
-	public Bitmap Image;
-	
+	/**
+	 * 
+	 */
 	public Forecast()
 	{
 		Icon = null;
+		Conditions = null;
 		Temperature = null;
 		FeelsLike = null;
 		Humidity = null;
@@ -57,38 +56,70 @@ public class Forecast implements Parcelable
 		Image = null;
 	}
 
+	/**
+	 * 
+	 * @param parcel
+	 */
 	public Forecast(Parcel parcel)
 	{
-		// pull values from parcel -- IN ORDER!
-		// Zipcode = parcel.readString();
+		Icon = parcel.readString();
+		Conditions = parcel.readString();
+		Temperature = parcel.readString();
+		FeelsLike = parcel.readString();
+		Humidity = parcel.readString();
+		ChancePrecip = parcel.readString();
+		ForecastDate = parcel.readString();
 		Image = parcel.readParcelable(Bitmap.class.getClassLoader());
-		Icon = null;
-		Temperature = null;
-		FeelsLike = null;
-		Humidity = null;
-		ChancePrecip = null;
-		ForecastDate = null;
 	}
 
+	/**
+	 * 
+	 */
 	@Override
 	public int describeContents()
 	{
 		return 0;
 	}
 
+	/**
+	 * 
+	 * @param parcel
+	 * @param flags
+	 */
 	@Override
-	public void writeToParcel(Parcel dest, int flags)
+	public void writeToParcel(Parcel parcel, int flags)
 	{
+		parcel.writeString(Icon);
+		parcel.writeString(Conditions);
+		parcel.writeString(Temperature);
+		parcel.writeString(FeelsLike);
+		parcel.writeString(Humidity);
+		parcel.writeString(ChancePrecip);
+		parcel.writeString(ForecastDate);
+		parcel.writeParcelable(Image, 0);
 	}
 
-	public static final Parcelable.Creator<Forecast> Creator = new Parcelable.Creator<Forecast>()
+	/**
+	 * 
+	 */
+	public static final Parcelable.Creator<Forecast> CREATOR = new Parcelable.Creator<Forecast>()
 	{
+		/**
+		 * 
+		 * @param source
+		 * @return
+		 */
 		@Override
-		public Forecast createFromParcel(Parcel pc)
+		public Forecast createFromParcel(Parcel source)
 		{
-			return new Forecast(pc);
+			return new Forecast(source);
 		}
 		
+		/**
+		 * 
+		 * @param size
+		 * @return
+		 */
 		@Override
 		public Forecast[] newArray(int size)
 		{
@@ -96,53 +127,64 @@ public class Forecast implements Parcelable
 		}
 	};
 
+	/**
+	 * 
+	 * @author Scott Samson
+	 *
+	 */
 	public class LoadForecast extends AsyncTask<String, Void, Forecast>
 	{
 		private IListeners _listener;
 		private Context _context;
-
 		private int bitmapSampleSize = -1;
 
+		/**
+		 * 
+		 * @param context
+		 * @param listener
+		 */
 		public LoadForecast(Context context, IListeners listener)
 		{
 			_context = context;
 			_listener = listener;
 		}
 
+		/**
+		 * 
+		 * @param params
+		 * @return
+		 */
 		protected Forecast doInBackground(String... params)
 		{
 			Forecast forecast = null;
 			URL url = null;
+			Reader streamReader = null;
 			
 			// try catch for url
 			try 
 			{
-				url = new URL(String.format(_URL, params));
+				url = new URL(String.format(_URL, (Object[]) params));
 			} 
 			catch (MalformedURLException e1) 
 			{
 				e1.printStackTrace();
 			}
 			
-			Reader streamReader = null;
-			
 			//try catch for reader
 			try 
 			{
 				streamReader = new InputStreamReader(url.openStream());
-				
 			} 
 			catch (IOException e1)
 			{
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			catch (Exception e2)
 			{
-				Log.d("Assignment3", "general error");
 				e2.printStackTrace();
 			}
 
+			// load the stream into the json reader
 			JsonReader jsonReader = new JsonReader(streamReader);
 		
 			// try catch for json
@@ -164,6 +206,14 @@ public class Forecast implements Parcelable
 						if (name.equals("icon") == true)
 						{
 							Icon = jsonReader.nextString();
+							
+							// get the bitmap
+							Image = readIconBitmap(Icon, bitmapSampleSize);
+							
+						}
+						else if (name.equals("desc") == true)
+						{
+							Conditions = jsonReader.nextString();
 						}
 						else if (name.equals("temperature") == true)
 						{
@@ -186,11 +236,10 @@ public class Forecast implements Parcelable
 							jsonReader.skipValue();
 						}
 					}
-					jsonReader.endArray();
-					jsonReader.endObject();
 				}
-				jsonReader.endObject();
 				
+				jsonReader.endObject();
+				jsonReader.close();				
 			}
 			catch (IllegalStateException e)
 			{
@@ -201,15 +250,24 @@ public class Forecast implements Parcelable
 				Log.e(TAG, e.toString());
 			}
 			
-			
 			return forecast;
 		}
-
+		
+		/**
+		 * 
+		 * @param forecast
+		 */
 		protected void onPostExecute(Forecast forecast)
 		{
 			_listener.onForecastLoaded(forecast);
 		}
 
+		/**
+		 * 
+		 * @param conditionString
+		 * @param bitmapSampleSize
+		 * @return
+		 */
 		private Bitmap readIconBitmap(String conditionString, int bitmapSampleSize)
 		{
 			Bitmap iconBitmap = null;
