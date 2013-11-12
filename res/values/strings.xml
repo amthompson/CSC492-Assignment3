@@ -8,12 +8,9 @@
    <string name="labelHumidity">Humidity:&#160;</string>
    <string name="labelChanceOfPrecip">Chance of Precipitation:&#160;</string>
    <string name="labelAsOfTime">As Of:&#160;</string>
-   
    <string name="pendingWebCall">pending</string>
-   
    <string name="progressMessage">Loading Current Forecast</string>
-
-   <string name="toastNullData">Data could not be read from web service.</string>
+   <string name="toastNetworkUnavaliable">Unable to establish network connectivity.</string>
 
    <string-array name="cityArray">
      <item>57701|Rapid City</item>

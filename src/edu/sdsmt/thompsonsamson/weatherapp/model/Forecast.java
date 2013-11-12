@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -132,12 +133,12 @@ public class Forecast implements Parcelable
 	 * @author Scott Samson
 	 *
 	 */
-	public class LoadForecast extends AsyncTask<String, Void, Forecast>
+	public class LoadForecast extends AsyncTask<String, Void, Forecast> 
 	{
 		private IListeners _listener;
-		private Context _context;
+		//private Context _context;
 		private int bitmapSampleSize = -1;
-
+		
 		/**
 		 * 
 		 * @param context
@@ -145,7 +146,7 @@ public class Forecast implements Parcelable
 		 */
 		public LoadForecast(Context context, IListeners listener)
 		{
-			_context = context;
+			//_context = context;
 			_listener = listener;
 		}
 
@@ -165,9 +166,9 @@ public class Forecast implements Parcelable
 			{
 				url = new URL(String.format(_URL, (Object[]) params));
 			} 
-			catch (MalformedURLException e1) 
+			catch (MalformedURLException e) 
 			{
-				e1.printStackTrace();
+				Log.e(TAG, "MalformedURLException: " + e.toString());
 			}
 			
 			//try catch for reader
@@ -175,13 +176,17 @@ public class Forecast implements Parcelable
 			{
 				streamReader = new InputStreamReader(url.openStream());
 			} 
-			catch (IOException e1)
+			catch (UnknownHostException e)
 			{
-				e1.printStackTrace();
+				Log.e(TAG, "UnknownHostException: " + e.toString());
 			}
-			catch (Exception e2)
+			catch (IOException e)
 			{
-				e2.printStackTrace();
+				Log.e(TAG, "IOException: " + e.toString());
+			}
+			catch (Exception e)
+			{
+				Log.e(TAG, "Exception: " + e.toString());
 			}
 
 			// load the stream into the json reader
@@ -208,7 +213,7 @@ public class Forecast implements Parcelable
 							Icon = jsonReader.nextString();
 							
 							// get the bitmap
-							Image = readIconBitmap(Icon, bitmapSampleSize);
+							Image = readIconBitmap(Icon, bitmapSampleSize);							
 							
 						}
 						else if (name.equals("desc") == true)
@@ -243,27 +248,33 @@ public class Forecast implements Parcelable
 			}
 			catch (IllegalStateException e)
 			{
-				Log.e(TAG, e.toString() + params[0]);
+				Log.e(TAG, "IllegalStateException: " + e.toString());
+			}
+			catch (IOException e)
+			{
+				Log.e(TAG, "IOException: " + e.toString());
 			}
 			catch (Exception e)
 			{
-				Log.e(TAG, e.toString());
+				Log.e(TAG, "Exception: " + e.toString());
 			}
 			
 			return forecast;
 		}
-		
+				
 		/**
 		 * 
 		 * @param forecast
 		 */
 		protected void onPostExecute(Forecast forecast)
 		{
+			super.onPostExecute(forecast);
 			_listener.onForecastLoaded(forecast);
 		}
-
+		
 		/**
 		 * 
+		 * @author Brian Butterfield
 		 * @param conditionString
 		 * @param bitmapSampleSize
 		 * @return
