@@ -17,7 +17,7 @@ import android.util.Log;
 
 public class ForecastLocation implements Parcelable
 {
-	private static final String TAG = "";
+	private static final String TAG = "Assignment3:ForecastLocation";
 	
 	public String ZipCode;
 	public String City;
@@ -43,6 +43,25 @@ public class ForecastLocation implements Parcelable
 		Country = parcel.readString();
 	}
 	
+	/**
+	 * 
+	 */
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public void writeToParcel(Parcel parcel, int flags) {
+		parcel.writeString(ZipCode);
+		parcel.writeString(City);
+		parcel.writeString(State);
+		parcel.writeString(Country);
+	}
+
 	public static final Parcelable.Creator<ForecastLocation> CREATOR = new Parcelable.Creator<ForecastLocation>() 
 	{
 		@Override
@@ -96,7 +115,6 @@ public class ForecastLocation implements Parcelable
 			}
 			catch (Exception e2)
 			{
-				Log.d("Assignment3", "general error");
 				e2.printStackTrace();
 			}
 			
@@ -176,24 +194,5 @@ public class ForecastLocation implements Parcelable
 			super.onPostExecute(forecastLocation);			
 			_listener.onLocationLoaded(forecastLocation);
 		}
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public int describeContents() {
-		return 0;
-	}
-
-	/**
-	 * 
-	 */
-	@Override
-	public void writeToParcel(Parcel parcel, int flags) {
-		parcel.writeString(ZipCode);
-		parcel.writeString(City);
-		parcel.writeString(State);
-		parcel.writeString(Country);
 	}
 }

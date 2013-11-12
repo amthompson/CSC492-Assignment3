@@ -30,6 +30,26 @@
                 android:textSize="27sp" />
 
             <TextView
+                android:id="@+id/labelConditions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="3dp"
+                android:text="@string/labelConditions"
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/textViewConditions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="3dp"
+                android:text="@string/pendingWebCall"
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
+            
+            <TextView
                 android:id="@+id/labelTemp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -3,7 +3,7 @@
 
     <string name="app_name">WeatherApp</string>
     
-   <string name="labelTemp">Temperature:&#160;</string>
+   <string name="labelConditions">Current Conditions:</string><string name="labelTemp">Temperature:&#160;</string>
    <string name="labelFeelsLikeTemp">Feels Like:&#160;</string>
    <string name="labelHumidity">Humidity:&#160;</string>
    <string name="labelChanceOfPrecip">Chance of Precipitation:&#160;</string>
@@ -26,5 +26,6 @@
      <item>94112|San Francisco</item>
      <item>98101|Seattle</item>
  </string-array>
+   
    
 </resources>
