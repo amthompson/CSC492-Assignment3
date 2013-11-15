@@ -142,7 +142,7 @@ public class Forecast implements Parcelable
 		 */
 		protected Forecast doInBackground(String... params)
 		{
-			Forecast forecast = new Forecast();
+			Forecast forecast = null;
 			URL url = null;
 			Reader streamReader = null;
 			
@@ -168,9 +168,14 @@ public class Forecast implements Parcelable
 				Log.e(TAG, e.toString());
 			}
 
+			if( streamReader == null) {
+				return null;
+			}
+			
 			// load the stream into the json reader
 			JsonReader jsonReader = new JsonReader(streamReader);
-		
+			forecast = new Forecast();
+			
 			// try catch for json
 			try {
 				
@@ -241,12 +246,18 @@ public class Forecast implements Parcelable
 		 */
 		protected void onPostExecute(Forecast forecast)
 		{
-			_listener.onForecastLoaded(forecast);
+			if( forecast == null)
+			{
+				_listener.onForecastNotLoaded();
+			}
+			else
+			{
+				_listener.onForecastLoaded(forecast);	
+			}
 		}
 		
 		/**
 		 * 
-		 * @author Brian Butterfield
 		 * @param conditionString
 		 * @param bitmapSampleSize
 		 * @return

@@ -43,7 +43,8 @@ public class FragmentForecast extends Fragment
 	private String ZipCode = null;
 	private ForecastLocation _forecastLocation;
 	private Forecast _forecast;
-	
+
+	private HandleWebCallListener _webRequest;
 	private LoadForecastLocation _loadForecastLocation;
 	private LoadForecast _loadForecast;
 	
@@ -61,57 +62,6 @@ public class FragmentForecast extends Fragment
 	
 	/**
 	 * 
-	 * @author Andrew Thompson
-	 *
-	 */
-	public class HandleWebCallListener implements IListeners
-	{
-		/**
-		 * 
-		 * @param forecastLocation
-		 */
-		@Override
-		public void onLocationLoaded(ForecastLocation forecastLocation) 
-		{
-			_forecastLocation = forecastLocation;
-			
-			if( forecastLocation.City != null ) {
-				_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
-			}
-		}
-
-		/**
-		 * 
-		 * @param forecast
-		 */
-		@Override
-		public void onForecastLoaded(Forecast forecast) 
-		{
-			_forecast = forecast;
-
-			if( forecast.ForecastDate != null ) {
-				// turn the loading screen off
-				_loadingScreen.setVisibility(View.GONE);
-				
-				// set the image
-				_imageIcon.setImageBitmap(_forecast.Image);
-				
-				// populate the text fields
-				_textConditions.setText(_forecast.Conditions);
-				_textTemperature.setText(_forecast.Temperature + "\u00B0 F");
-				_textFeelsLike.setText(_forecast.FeelsLike + "\u00B0 F");
-				_textHumidity.setText(_forecast.Humidity + "%");
-				_textPrecip.setText(_forecast.ChancePrecip + "%");
-				_textTime.setText(formatDateTime(_forecast.ForecastDate));
-				
-				// turn the forecast data on
-				_forecastData.setVisibility(View.VISIBLE);
-			}
-		}
-	}
-	
-	/**
-	 * 
 	 * @param argumentsBundle Bundle data passed from main activity to fragment
 	 */
 	@Override
@@ -121,6 +71,8 @@ public class FragmentForecast extends Fragment
 		
 		// get the bundle data saved to the fragment
 		argumentsBundle = getArguments();
+		
+		_webRequest = new HandleWebCallListener();
 		
 		// define data models for location and forecast
 		_forecastLocation = new ForecastLocation();
@@ -202,16 +154,14 @@ public class FragmentForecast extends Fragment
 	{
 		super.onResume();
 		
-		HandleWebCallListener webRequest = new HandleWebCallListener();
-		
 		if( ZipCode != null) {
 	
 			// make the api call to get the location data
-			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(webRequest);
+			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(_webRequest);
 			_loadForecastLocation.execute(ZipCode);
 	
 			// make the api call to get the forecast data
-			_loadForecast = _forecast.new LoadForecast(webRequest);
+			_loadForecast = _forecast.new LoadForecast(_webRequest);
 			_loadForecast.execute(ZipCode);		
 		}
 	}
@@ -292,5 +242,68 @@ public class FragmentForecast extends Fragment
 		DateFormat dateFormat = new SimpleDateFormat("EEE MMM d, h:mm a", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
 		return dateFormat.format(date);
+	}
+
+	/**
+	 * 
+	 * @author Andrew Thompson
+	 *
+	 */
+	public class HandleWebCallListener implements IListeners
+	{
+		/**
+		 * 
+		 * @param forecastLocation
+		 */
+		@Override
+		public void onLocationLoaded(ForecastLocation forecastLocation) 
+		{
+			_forecastLocation = forecastLocation;
+			
+			if( forecastLocation.City != null ) {
+				_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
+			}
+		}
+	
+		/**
+		 * 
+		 * @param forecast
+		 */
+		@Override
+		public void onForecastLoaded(Forecast forecast) 
+		{
+			_forecast = forecast;
+	
+			if( forecast.ForecastDate != null ) {
+				// turn the loading screen off
+				_loadingScreen.setVisibility(View.GONE);
+				
+				// set the image
+				_imageIcon.setImageBitmap(_forecast.Image);
+				
+				// populate the text fields
+				_textConditions.setText(_forecast.Conditions);
+				_textTemperature.setText(_forecast.Temperature + "\u00B0 F");
+				_textFeelsLike.setText(_forecast.FeelsLike + "\u00B0 F");
+				_textHumidity.setText(_forecast.Humidity + "%");
+				_textPrecip.setText(_forecast.ChancePrecip + "%");
+				_textTime.setText(formatDateTime(_forecast.ForecastDate));
+				
+				// turn the forecast data on
+				_forecastData.setVisibility(View.VISIBLE);
+			}
+		}
+	
+		@Override
+		public void onLocationNotLoaded()
+		{
+			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+		}
+	
+		@Override
+		public void onForecastNotLoaded()
+		{
+			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+		}
 	}
 }

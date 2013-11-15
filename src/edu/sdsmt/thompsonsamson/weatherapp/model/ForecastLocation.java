@@ -137,6 +137,10 @@ public class ForecastLocation implements Parcelable
 				Log.e(TAG, e.toString());
 			}
 
+			if( streamReader == null) {
+				return null;
+			}
+			
 			// set the reader to the stream
 			JsonReader jsonReader = new JsonReader(streamReader);
 			forecastLocation = new ForecastLocation();
@@ -207,7 +211,16 @@ public class ForecastLocation implements Parcelable
 		protected void onPostExecute(ForecastLocation forecastLocation)
 		{
 			super.onPostExecute(forecastLocation);
-			_listener.onLocationLoaded(forecastLocation);
+			
+			if( forecastLocation == null )
+			{
+				_listener.onLocationNotLoaded();
+			}
+			else 
+			{
+				_listener.onLocationLoaded(forecastLocation);	
+			}
+			
 		}
 	}
 }
