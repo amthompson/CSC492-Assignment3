@@ -5,9 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -95,9 +93,8 @@ public class ForecastLocation implements Parcelable
 	 * @author Scott Samson
 	 *
 	 */
-	public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
+	public class LoadForecastLocation extends AsyncTask<String, Integer, ForecastLocation>
 	{
-		//private Context _context;
 		private IListeners _listener;
 		
 		/**
@@ -105,9 +102,8 @@ public class ForecastLocation implements Parcelable
 		 * @param context
 		 * @param listener
 		 */
-		public LoadForecastLocation(Context context, IListeners listener)
+		public LoadForecastLocation(IListeners listener)
 		{
-			//_context = context;
 			_listener = listener;
 		}
 		
@@ -123,35 +119,31 @@ public class ForecastLocation implements Parcelable
 			Reader streamReader = null;
 			
 			//try catch for url
-			try 
-			{
+			try {
 				url = new URL(String.format(_URL, (Object[]) params));
 			} 
-			catch (MalformedURLException e) 
-			{
-				Log.e(TAG, "MalformedURLException: " + e.toString());
+			catch (MalformedURLException e) {
+				Log.e(TAG, e.toString());
 			}
-			
+				
 			//try catch for reader
-			try 
-			{
+			try {
 				streamReader = new InputStreamReader(url.openStream());
 			} 
-			catch (IOException e)
-			{
-				Log.e(TAG, "IOException: " + e.toString());
+			catch (IOException e) {
+				Log.e(TAG, e.toString());
 			}
-			catch (Exception e)
-			{
-				Log.e(TAG, "Exception: " + e.toString());
+			catch (Exception e) {
+				Log.e(TAG, e.toString());
 			}
-			
+
 			// set the reader to the stream
 			JsonReader jsonReader = new JsonReader(streamReader);
+			forecastLocation = new ForecastLocation();
 			
 			// try catch to read json
-			try 
-			{
+			try	{
+				
 				// start at the first object
 				jsonReader.beginObject();
 				
@@ -159,8 +151,8 @@ public class ForecastLocation implements Parcelable
 				String name = jsonReader.nextName();
 				
 				// if the node is location, get the data
-				if (name.equals("location") == true)
-				{
+				if (name.equals("location") == true) {
+					
 					// start at the first object in location
 					jsonReader.beginObject();
 					
@@ -169,22 +161,19 @@ public class ForecastLocation implements Parcelable
 					{
 						name = jsonReader.nextName();
 						
-						if (name.equals("city") == true)
-						{
-							City = jsonReader.nextString();
+						if (name.equals("city") == true) {
+							forecastLocation.City = jsonReader.nextString();
 						}
-						else if (name.equals("state") == true)
-						{
-							State = jsonReader.nextString();
+						else if (name.equals("state") == true) {
+							forecastLocation.State = jsonReader.nextString();
 						}
-						else if (name.equals("country") == true)
-						{
-							Country = jsonReader.nextString();
-						}else if (name.equals("zipCode") == true)
-						{
-							ZipCode = jsonReader.nextString();
-						}else 
-						{
+						else if (name.equals("country") == true) {
+							forecastLocation.Country = jsonReader.nextString();
+						}
+						else if (name.equals("zipCode") == true) {
+							forecastLocation.ZipCode = jsonReader.nextString();
+						}
+						else {
 							jsonReader.skipValue();
 						}
 					}
@@ -199,13 +188,11 @@ public class ForecastLocation implements Parcelable
 				// close the reader
 				jsonReader.close();
 			}
-			catch (IllegalStateException e)
-			{
-				Log.e(TAG, "IllegalStateException: " + e.toString());
+			catch (IllegalStateException e) {
+				Log.e(TAG, e.toString());
 			}
-			catch (Exception e)
-			{
-				Log.e(TAG, "Exception: " + e.toString());
+			catch (Exception e)	{
+				Log.e(TAG, e.toString());
 			}
 			
 			// return the object to parent class			

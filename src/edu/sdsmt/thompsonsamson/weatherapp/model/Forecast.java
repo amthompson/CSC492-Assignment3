@@ -6,7 +6,6 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -105,25 +104,13 @@ public class Forecast implements Parcelable
 	 */
 	public static final Parcelable.Creator<Forecast> CREATOR = new Parcelable.Creator<Forecast>()
 	{
-		/**
-		 * 
-		 * @param source
-		 * @return
-		 */
 		@Override
-		public Forecast createFromParcel(Parcel source)
-		{
+		public Forecast createFromParcel(Parcel source)	{
 			return new Forecast(source);
 		}
 		
-		/**
-		 * 
-		 * @param size
-		 * @return
-		 */
 		@Override
-		public Forecast[] newArray(int size)
-		{
+		public Forecast[] newArray(int size) {
 			return new Forecast[size];
 		}
 	};
@@ -136,7 +123,6 @@ public class Forecast implements Parcelable
 	public class LoadForecast extends AsyncTask<String, Void, Forecast> 
 	{
 		private IListeners _listener;
-		//private Context _context;
 		private int bitmapSampleSize = -1;
 		
 		/**
@@ -144,9 +130,8 @@ public class Forecast implements Parcelable
 		 * @param context
 		 * @param listener
 		 */
-		public LoadForecast(Context context, IListeners listener)
+		public LoadForecast(IListeners listener)
 		{
-			//_context = context;
 			_listener = listener;
 		}
 
@@ -157,87 +142,78 @@ public class Forecast implements Parcelable
 		 */
 		protected Forecast doInBackground(String... params)
 		{
-			Forecast forecast = null;
+			Forecast forecast = new Forecast();
 			URL url = null;
 			Reader streamReader = null;
 			
 			// try catch for url
-			try 
-			{
+			try {
 				url = new URL(String.format(_URL, (Object[]) params));
 			} 
-			catch (MalformedURLException e) 
-			{
-				Log.e(TAG, "MalformedURLException: " + e.toString());
+			catch (MalformedURLException e) {
+				Log.e(TAG, e.toString());
 			}
 			
 			//try catch for reader
-			try 
-			{
+			try {
 				streamReader = new InputStreamReader(url.openStream());
 			} 
-			catch (UnknownHostException e)
-			{
-				Log.e(TAG, "UnknownHostException: " + e.toString());
+			catch (UnknownHostException e) {
+				Log.e(TAG, e.toString());
 			}
-			catch (IOException e)
-			{
-				Log.e(TAG, "IOException: " + e.toString());
+			catch (IOException e) {
+				Log.e(TAG, e.toString());
 			}
-			catch (Exception e)
-			{
-				Log.e(TAG, "Exception: " + e.toString());
+			catch (Exception e)	{
+				Log.e(TAG, e.toString());
 			}
 
 			// load the stream into the json reader
 			JsonReader jsonReader = new JsonReader(streamReader);
 		
 			// try catch for json
-			try
-			{
+			try {
+				
 				jsonReader.beginObject();
 				
 				String name = jsonReader.nextName();
 				
-				if (name.equals("forecastHourlyList") == true)
-				{
+				if (name.equals("forecastHourlyList") == true) {
+					
 					jsonReader.beginArray();			
 					jsonReader.beginObject();
-					while (jsonReader.hasNext())
-					{
+					
+					while (jsonReader.hasNext()) {
+						
 						//jsonReader.beginObject();
 						name = jsonReader.nextName();
 						
-						if (name.equals("icon") == true)
-						{
-							Icon = jsonReader.nextString();
+						if (name.equals("icon") == true) {
+							
+							forecast.Icon = jsonReader.nextString();
 							
 							// get the bitmap
-							Image = readIconBitmap(Icon, bitmapSampleSize);							
-							
+							forecast.Image = readIconBitmap(forecast.Icon, bitmapSampleSize);
 						}
-						else if (name.equals("desc") == true)
-						{
-							Conditions = jsonReader.nextString();
+						else if (name.equals("desc") == true) {
+							forecast.Conditions = jsonReader.nextString();
 						}
-						else if (name.equals("temperature") == true)
-						{
-							Temperature = jsonReader.nextString();
+						else if (name.equals("temperature") == true) {
+							forecast.Temperature = jsonReader.nextString();
 						}
-						else if (name.equals("feelsLike") == true)
-						{
-							FeelsLike = jsonReader.nextString();
-						}else if (name.equals("humidity") == true)
-						{
-							Humidity = jsonReader.nextString();
-						}else if (name.equals("chancePrecip") == true)
-						{
-							ChancePrecip = jsonReader.nextString();
-						}else if (name.equals("dateTime") == true)
-						{
-							ForecastDate = jsonReader.nextString();
-						}else 
-						{
+						else if (name.equals("feelsLike") == true) {
+							forecast.FeelsLike = jsonReader.nextString();
+						}
+						else if (name.equals("humidity") == true) {
+							forecast.Humidity = jsonReader.nextString();
+						}
+						else if (name.equals("chancePrecip") == true) {
+							forecast.ChancePrecip = jsonReader.nextString();
+						}
+						else if (name.equals("dateTime") == true) {
+							forecast.ForecastDate = jsonReader.nextString();
+						}
+						else {
 							jsonReader.skipValue();
 						}
 					}
@@ -246,17 +222,14 @@ public class Forecast implements Parcelable
 				jsonReader.endObject();
 				jsonReader.close();				
 			}
-			catch (IllegalStateException e)
-			{
-				Log.e(TAG, "IllegalStateException: " + e.toString());
+			catch (IllegalStateException e)	{
+				Log.e(TAG, e.toString());
 			}
-			catch (IOException e)
-			{
-				Log.e(TAG, "IOException: " + e.toString());
+			catch (IOException e) {
+				Log.e(TAG, e.toString());
 			}
-			catch (Exception e)
-			{
-				Log.e(TAG, "Exception: " + e.toString());
+			catch (Exception e) {
+				Log.e(TAG, e.toString());
 			}
 			
 			return forecast;
@@ -268,7 +241,6 @@ public class Forecast implements Parcelable
 		 */
 		protected void onPostExecute(Forecast forecast)
 		{
-			super.onPostExecute(forecast);
 			_listener.onForecastLoaded(forecast);
 		}
 		
@@ -282,8 +254,7 @@ public class Forecast implements Parcelable
 		private Bitmap readIconBitmap(String conditionString, int bitmapSampleSize)
 		{
 			Bitmap iconBitmap = null;
-			try
-			{
+			try {
 				URL weatherURL = new URL(String.format(_imageURL, conditionString));
 
 				BitmapFactory.Options options = new BitmapFactory.Options();
@@ -294,16 +265,13 @@ public class Forecast implements Parcelable
 
 				iconBitmap = BitmapFactory.decodeStream(weatherURL.openStream(), null, options);
 			}
-			catch (MalformedURLException e)
-			{
+			catch (MalformedURLException e) {
 				Log.e(TAG, e.toString());
 			}
-			catch (IOException e)
-			{
+			catch (IOException e) {
 				Log.e(TAG, e.toString());
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				Log.e(TAG, e.toString());
 			}
 

@@ -1,12 +1,15 @@
 package edu.sdsmt.thompsonsamson.weatherapp.view;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
+import java.util.Locale;
+import java.util.TimeZone;
 import android.app.Fragment;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,7 +34,7 @@ import edu.sdsmt.thompsonsamson.weatherapp.model.ForecastLocation.LoadForecastLo
  */
 public class FragmentForecast extends Fragment
 {
-	private static final String TAG = "Assignment3:FragmentForecast";
+	//private static final String TAG = "Assignment3:FragmentForecast";
 	
 	// keys for parcelable/bundle data
 	public static final String LOCATION_KEY = "key_location";
@@ -40,6 +43,9 @@ public class FragmentForecast extends Fragment
 	private String ZipCode = null;
 	private ForecastLocation _forecastLocation;
 	private Forecast _forecast;
+	
+	private LoadForecastLocation _loadForecastLocation;
+	private LoadForecast _loadForecast;
 	
 	private ScrollView _forecastData;
 	private RelativeLayout _loadingScreen;
@@ -58,18 +64,49 @@ public class FragmentForecast extends Fragment
 	 * @author Andrew Thompson
 	 *
 	 */
-	public class HandleAPICallListener implements IListeners
+	public class HandleWebCallListener implements IListeners
 	{
+		/**
+		 * 
+		 * @param forecastLocation
+		 */
 		@Override
 		public void onLocationLoaded(ForecastLocation forecastLocation) 
 		{
 			_forecastLocation = forecastLocation;
+			
+			if( forecastLocation.City != null ) {
+				_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
+			}
 		}
 
+		/**
+		 * 
+		 * @param forecast
+		 */
 		@Override
 		public void onForecastLoaded(Forecast forecast) 
 		{
 			_forecast = forecast;
+
+			if( forecast.ForecastDate != null ) {
+				// turn the loading screen off
+				_loadingScreen.setVisibility(View.GONE);
+				
+				// set the image
+				_imageIcon.setImageBitmap(_forecast.Image);
+				
+				// populate the text fields
+				_textConditions.setText(_forecast.Conditions);
+				_textTemperature.setText(_forecast.Temperature + "\u00B0 F");
+				_textFeelsLike.setText(_forecast.FeelsLike + "\u00B0 F");
+				_textHumidity.setText(_forecast.Humidity + "%");
+				_textPrecip.setText(_forecast.ChancePrecip + "%");
+				_textTime.setText(formatDateTime(_forecast.ForecastDate));
+				
+				// turn the forecast data on
+				_forecastData.setVisibility(View.VISIBLE);
+			}
 		}
 	}
 	
@@ -90,8 +127,7 @@ public class FragmentForecast extends Fragment
 		_forecast = new Forecast();
 
 		// if the bundled data isn't empty, set the class member
-		if (argumentsBundle != null)
-		{
+		if (argumentsBundle != null) {
 			ZipCode = argumentsBundle.getString("ZIP_CODE");
 		}
 	}
@@ -124,16 +160,12 @@ public class FragmentForecast extends Fragment
 		// setup ui objects
 		configureTextFields(rootView);
 		
+		// check network connection
+		if ( !networkOnline() ) {
+			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+		}
+		
 		return rootView;
-	}
-	
-	private boolean networkOnline() 
-	{
-		ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo netInfo = cm.getActiveNetworkInfo();
-		if (netInfo != null && netInfo.isConnectedOrConnecting())
-			return true;
-		return false;
 	}
 	
 	/**
@@ -144,25 +176,43 @@ public class FragmentForecast extends Fragment
 	public void onActivityCreated(Bundle savedInstanceStateBundle)
 	{
 		super.onActivityCreated(savedInstanceStateBundle);
-
-		if ( !networkOnline() )
-		{
-			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
-		}
-		else
-		{
-			// get the location and forecast from api calls
-			if( makeAPICalls() )
-			{
-				populateTextFields();
-			}
-		}
 		
 		// restore data from bundle
-		if( savedInstanceStateBundle != null )
-		{			
+		if( savedInstanceStateBundle != null ) {			
 			_forecastLocation = savedInstanceStateBundle.getParcelable(LOCATION_KEY);
 			_forecast = savedInstanceStateBundle.getParcelable(FORECAST_KEY);
+		}
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public void onPause()
+	{
+		super.onPause();
+		stopTasks();
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		
+		HandleWebCallListener webRequest = new HandleWebCallListener();
+		
+		if( ZipCode != null) {
+	
+			// make the api call to get the location data
+			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(webRequest);
+			_loadForecastLocation.execute(ZipCode);
+	
+			// make the api call to get the forecast data
+			_loadForecast = _forecast.new LoadForecast(webRequest);
+			_loadForecast.execute(ZipCode);		
 		}
 	}
 
@@ -173,72 +223,14 @@ public class FragmentForecast extends Fragment
 	public void onDestroy()
 	{
 		super.onDestroy();
+		stopTasks();
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean makeAPICalls()
-	{
-		if( ZipCode == null)
-		{
-			return false;
-		}
-				
-		// make the api call to get the location data
-		LoadForecastLocation loadForecastLocation = _forecastLocation.new LoadForecastLocation(getActivity(), new HandleAPICallListener());
-		loadForecastLocation.execute(ZipCode);
-		
-		// wait for the task to complete to set the location
-		try 
-		{
-			loadForecastLocation.get();
-		} 
-		catch (InterruptedException e) 
-		{
-			e.printStackTrace();
-			return false;
-		} 
-		catch (ExecutionException e) 
-		{
-			Toast.makeText(getActivity(), "LoadForecastLocation:ExecutionException", Toast.LENGTH_LONG).show();
-			return false;
-		}
-		
-		Log.d(TAG, "Forecast Location Loaded: " + _forecastLocation.City);
-		
-		// make the api call to get the forecast data
-		LoadForecast loadForecast = _forecast.new LoadForecast(getActivity(), new HandleAPICallListener());
-		loadForecast.execute(ZipCode);
-
-		// wait for the task to complete to set the forecast
-		try 
-		{
-			loadForecast.get();
-		} 
-		catch (InterruptedException e) 
-		{
-			e.printStackTrace();
-			return false;
-		} 
-		catch (ExecutionException e) 
-		{
-			Toast.makeText(getActivity(), "LoadForecast:ExecutionException", Toast.LENGTH_LONG).show();
-			e.printStackTrace();
-			return false;
-		}
-
-		Log.d(TAG, "Forecast Loaded: " + _forecast.ForecastDate);
-		
-		return true;
-	}
-	
 	/**
 	 * 
 	 * @param v
 	 */
-	public void configureTextFields(View v)
+	private void configureTextFields(View v)
 	{
 		// loading screen
 		_loadingScreen = (RelativeLayout) v.findViewById(R.id.layoutProgress);
@@ -257,40 +249,48 @@ public class FragmentForecast extends Fragment
 		_textPrecip = (TextView) v.findViewById(R.id.textViewChanceOfPrecip);
 		_textTime = (TextView) v.findViewById(R.id.textViewAsOfTime);
 	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private boolean networkOnline() 
+	{
+		ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		
+		if (netInfo != null && netInfo.isConnected()) {
+			return true;
+		}
+		
+		return false;
+	}
 	
 	/**
 	 * 
 	 */
-	public void populateTextFields()
+	private void stopTasks() 
 	{
-		// turn the loading screen off
-		_loadingScreen.setVisibility(View.GONE);
+		// if the asynctasks are still running, kill it
+		if( _loadForecastLocation.getStatus() == Status.RUNNING) {
+			_loadForecastLocation.cancel(true);
+		}
 		
-		// set the image
-		_imageIcon.setImageBitmap(_forecast.Image);
-		
-		// populate the text fields
-		_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
-		_textConditions.setText(_forecast.Conditions);
-		_textTemperature.setText(_forecast.Temperature + "\u00B0 F");
-		_textFeelsLike.setText(_forecast.FeelsLike + "\u00B0 F");
-		_textHumidity.setText(_forecast.Humidity + "%");
-		_textPrecip.setText(_forecast.ChancePrecip + "%");
-		_textTime.setText(formatDateTime(_forecast.ForecastDate));
-		
-		// turn the forecast data on
-		_forecastData.setVisibility(View.VISIBLE);
+		if( _loadForecast.getStatus() == Status.RUNNING) {
+			_loadForecast.cancel(true);
+		}	
 	}
-	
+
 	/**
 	 * 
 	 * @param timestamp
 	 * @return
 	 */
-	public String formatDateTime(String timestamp)
+	private String formatDateTime(String timestamp)
 	{
-		Date date = new Date(Long.valueOf(timestamp)); 		
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-		return df.format(date);
+		Date date = new Date(Long.valueOf(timestamp)); 	
+		DateFormat dateFormat = new SimpleDateFormat("EEE MMM d, h:mm a", Locale.US);
+		dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
+		return dateFormat.format(date);
 	}
 }

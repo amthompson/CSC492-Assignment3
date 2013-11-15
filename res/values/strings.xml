@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">WeatherApp</string>
+    <string name="app_name">Thompson|Samson WeatherApp</string>
     
    <string name="labelConditions">Current Conditions:</string><string name="labelTemp">Temperature:&#160;</string>
    <string name="labelFeelsLikeTemp">Feels Like:&#160;</string>
    <string name="labelHumidity">Humidity:&#160;</string>
    <string name="labelChanceOfPrecip">Chance of Precipitation:&#160;</string>
-   <string name="labelAsOfTime">As Of:&#160;</string>
+   <string name="labelAsOfTime">Forecast For:&#160;</string>
    <string name="pendingWebCall">pending</string>
    <string name="progressMessage">Loading Current Forecast</string>
    <string name="toastNetworkUnavaliable">Unable to establish network connectivity.</string>
-
+   <string name="toastGeneralError">There was an error getting forecast data.</string>
+   
    <string-array name="cityArray">
      <item>57701|Rapid City</item>
      <item>02115|Boston</item>
