@@ -45,17 +45,19 @@ public class FragmentForecast extends Fragment
 	public static final String LOCATION_KEY = "key_location";
 	public static final String FORECAST_KEY = "key_forecast";
 	
+	// view objects
 	private String ZipCode = null;						// zipcode to get forecast
 	private ForecastLocation _forecastLocation;			// object location of forecast
 	private Forecast _forecast;							// object for weather forecast
 
+	// listener/api objects
 	private HandleWebCallListener _webRequest;			// class to handle asynctasks
 	private LoadForecastLocation _loadForecastLocation;	// api call for location
 	private LoadForecast _loadForecast;					// api call for forecast
 	
+	// ui objects
 	private ScrollView _forecastData;					// ui container for forecast
-	private RelativeLayout _loadingScreen;				// spinning wheel for loading
-	
+	private RelativeLayout _loadingScreen;				// spinning wheel for loading	
 	private ImageView _imageIcon;						// forecast image
 	private TextView _textLocation;						// forecast location text
 	private TextView _textConditions;					// current conditions text
@@ -66,8 +68,10 @@ public class FragmentForecast extends Fragment
 	private TextView _textTime;							// time of forecast test
 		
 	/**
-	 * Creates the forecast and forecast location model objects.  If the bundle is not 
-	 * null ZipCode is loaded from it.
+	 * Handles the onCreate event for the fragment. This initializes the location 
+	 * and forecast model objects. If the bundle is not null, the ZipCode is loaded 
+	 * from it. Although, it shouldn't ever be null since we are passing the bundle item to
+	 * the fragment from the main activity. Just handling it to be safe.
 	 * 
 	 * @param argumentsBundle Bundle data passed from main activity to fragment
 	 */
@@ -109,8 +113,9 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
-	 * Creates the view and sets the layout.  Objects are inflated to their position specified
-	 * in the R file with the object inflater parameter.
+	 * Creates the view and sets up the layout. The view is inflated to the host
+	 * activity and ui objects are initialized. This method also checks if the
+	 * device has a network enabled or will display a toast message.
 	 * 
 	 * @param inflater inflates fragment according to the layout specified
 	 * @param container container for a group of views
@@ -120,6 +125,7 @@ public class FragmentForecast extends Fragment
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
+		// inflate the fragment to host activity
 		View rootView = inflater.inflate(R.layout.fragment_forecast, null);
 		
 		// setup ui objects
@@ -153,23 +159,28 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
-	 * Calls onDestroy in the parent object.
+	 * Handle the fragment onPause event. This occurs when rotating the device.
+	 * Need to cancel any asynctasks that might be running. We do this to
+	 * prevent any zombie processes.
 	 */
 	@Override
 	public void onPause() {
 		super.onPause();
+		
+		// stop any asynctasks
 		stopTasks();
 	}
 
 	/**
-	 * 
+	 * Handle the fragment onResume event. This occurs right after creating the
+	 * view and whenever the device is rotated. This is where we decided to do
+	 * the api web calls to ensure the newest data is loaded.
 	 */
 	@Override
 	public void onResume() {
 		super.onResume();
 		
-		if( ZipCode != null) {
-	
+		if( ZipCode != null) {	
 			// make the api call to get the location data
 			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(_webRequest);
 			_loadForecastLocation.execute(ZipCode);
@@ -181,17 +192,22 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
-	 * 
+	 * Handle the fragment onDestroy event. This occurs when the app is closed.
+	 * Need to cancel any asynctasks that might be running. We do this to
+	 * prevent any zombie processes.
 	 */
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+
+		// stop any asynctasks
 		stopTasks();
 	}
 
 	/**
 	 * Sets up the textViews for the view.  This hides the view while loading data and sets 
-	 * up the objects.
+	 * up the objects. We wanted to hide any ui objects until the data was loaded to 
+	 * prevent the pending text from displaying. We think it looked a little more clean.
 	 * 
 	 * @param v The view to display the objects in
 	 */
@@ -234,7 +250,9 @@ public class FragmentForecast extends Fragment
 	}
 	
 	/**
-	 * 
+	 * Stops any currently running asynctasks. We do this when the view is paused
+	 * or destroyed to prevent zombie processes. The tasks are generally short
+	 * run anyways, but this at least keeps them cleaned up.
 	 */
 	private void stopTasks() {
 		// if the asynctasks are still running, kill it
@@ -262,17 +280,16 @@ public class FragmentForecast extends Fragment
 	}
 	
 	/**
-	 * Handles the api calls to the model objects _forecast and _forecastLocation.
+	 * Handles calls back from the asynctasks. This will set the class members
+	 * to the model objects _forecast and _forecastLocation. If an object was
+	 * returned as null, we handle that as well by displaying some toast error.
 	 * This implements the IListeners interface.
-	 * 
-	 * @author Andrew Thompson
-	 *
 	 */
 	public class HandleWebCallListener implements IListeners {
 		
 		/**
 		 * Sets forecast location data from the api call to the screen
-		 * location element.
+		 * location object.
 		 * @param forecastLocation
 		 */
 		@Override
@@ -286,7 +303,7 @@ public class FragmentForecast extends Fragment
 	
 		/**
 		 * Sets forecast data from the api call to the forecast screen 
-		 * elements if it was loaded correctly.
+		 * objects if it was loaded correctly.
 		 * @param forecast
 		 * @return
 		 */
@@ -315,7 +332,7 @@ public class FragmentForecast extends Fragment
 		}
 	
 		/**
-		 * 
+		 * Displays a toast error if the location was returned as null
 		 */
 		@Override
 		public void onLocationNotLoaded() {
@@ -323,7 +340,7 @@ public class FragmentForecast extends Fragment
 		}
 	
 		/**
-		 * 
+		 * Displays a toast error if the forecast was returned as null
 		 */
 		@Override
 		public void onForecastNotLoaded() {
