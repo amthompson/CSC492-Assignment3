@@ -39,8 +39,6 @@ import edu.sdsmt.thompsonsamson.weatherapp.model.ForecastLocation.LoadForecastLo
  */
 public class FragmentForecast extends Fragment
 {
-	//private static final String TAG = "Assignment3:FragmentForecast";
-	
 	// keys for parcelable/bundle data
 	public static final String LOCATION_KEY = "key_location";
 	public static final String FORECAST_KEY = "key_forecast";
@@ -92,24 +90,10 @@ public class FragmentForecast extends Fragment
 
 		// if the bundled data isn't empty, get the zip code for the 
 		// forecast that was passed in from parent activity 
-		if (argumentsBundle != null) {
+		if (argumentsBundle != null) 
+		{
 			ZipCode = argumentsBundle.getString("ZIP_CODE");
 		}
-	}
-
-	/**
-	 * Saves the current forecast and forecast location data to the bundle.
-	 * 
-	 * @param savedInstanceStateBundle
-	 */
-	@Override
-	public void onSaveInstanceState(Bundle savedInstanceStateBundle)
-	{		
-		super.onSaveInstanceState(savedInstanceStateBundle);
-		
-		// save location nd forecast to the bundle
-		savedInstanceStateBundle.putParcelable(LOCATION_KEY, _forecastLocation);
-		savedInstanceStateBundle.putParcelable(FORECAST_KEY, _forecast);
 	}
 
 	/**
@@ -132,13 +116,29 @@ public class FragmentForecast extends Fragment
 		configureTextFields(rootView);
 		
 		// check network connection
-		if ( !networkOnline() ) {
+		if ( !networkOnline() ) 
+		{
 			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 		}
 		
 		return rootView;
 	}
 	
+	/**
+	 * Saves the current forecast and forecast location data to the bundle.
+	 * 
+	 * @param savedInstanceStateBundle
+	 */
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceStateBundle) 
+	{		
+		super.onSaveInstanceState(savedInstanceStateBundle);
+			
+		// save location nd forecast to the bundle
+		savedInstanceStateBundle.putParcelable(LOCATION_KEY, _forecastLocation);
+		savedInstanceStateBundle.putParcelable(FORECAST_KEY, _forecast);
+	}
+
 	/**
 	 * Creates the activity and gets forecast and forecast location data from the api.  
 	 * We will notify the user if there is no network connectivity.  Data is loaded 
@@ -148,11 +148,13 @@ public class FragmentForecast extends Fragment
 	 * @param v The view to display the objects in
 	 */
 	@Override
-	public void onActivityCreated(Bundle savedInstanceStateBundle) {
+	public void onActivityCreated(Bundle savedInstanceStateBundle) 
+	{
 		super.onActivityCreated(savedInstanceStateBundle);
 		
 		// restore data from bundle
-		if( savedInstanceStateBundle != null ) {			
+		if( savedInstanceStateBundle != null ) 
+		{			
 			_forecastLocation = savedInstanceStateBundle.getParcelable(LOCATION_KEY);
 			_forecast = savedInstanceStateBundle.getParcelable(FORECAST_KEY);
 		}
@@ -164,9 +166,10 @@ public class FragmentForecast extends Fragment
 	 * prevent any zombie processes.
 	 */
 	@Override
-	public void onPause() {
+	public void onPause() 
+	{
 		super.onPause();
-		
+
 		// stop any asynctasks
 		stopTasks();
 	}
@@ -177,10 +180,12 @@ public class FragmentForecast extends Fragment
 	 * the api web calls to ensure the newest data is loaded.
 	 */
 	@Override
-	public void onResume() {
+	public void onResume() 
+	{
 		super.onResume();
 		
-		if( ZipCode != null) {	
+		if( ZipCode != null) 
+		{	
 			// make the api call to get the location data
 			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(_webRequest);
 			_loadForecastLocation.execute(ZipCode);
@@ -197,7 +202,8 @@ public class FragmentForecast extends Fragment
 	 * prevent any zombie processes.
 	 */
 	@Override
-	public void onDestroy() {
+	public void onDestroy() 
+	{
 		super.onDestroy();
 
 		// stop any asynctasks
@@ -211,7 +217,8 @@ public class FragmentForecast extends Fragment
 	 * 
 	 * @param v The view to display the objects in
 	 */
-	private void configureTextFields(View v) {
+	private void configureTextFields(View v) 
+	{
 		// loading screen
 		_loadingScreen = (RelativeLayout) v.findViewById(R.id.layoutProgress);
 				
@@ -238,11 +245,15 @@ public class FragmentForecast extends Fragment
 	 * @return true return true if network connected
 	 * @return false return false if network not connected
 	 */
-	private boolean networkOnline() {
+	private boolean networkOnline() 
+	{
+		// get connection manager and network info objects
 		ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		
-		if (netInfo != null && netInfo.isConnected()) {
+		// true if if network doesn't exist or isn't connected
+		if (netInfo != null && netInfo.isConnected()) 
+		{
 			return true;
 		}
 		
@@ -254,13 +265,16 @@ public class FragmentForecast extends Fragment
 	 * or destroyed to prevent zombie processes. The tasks are generally short
 	 * run anyways, but this at least keeps them cleaned up.
 	 */
-	private void stopTasks() {
+	private void stopTasks() 
+	{
 		// if the asynctasks are still running, kill it
-		if( _loadForecastLocation.getStatus() == Status.RUNNING) {
+		if( _loadForecastLocation.getStatus() == Status.RUNNING) 
+		{
 			_loadForecastLocation.cancel(true);
 		}
 		
-		if( _loadForecast.getStatus() == Status.RUNNING) {
+		if( _loadForecast.getStatus() == Status.RUNNING) 
+		{
 			_loadForecast.cancel(true);
 		}	
 	}
@@ -272,7 +286,8 @@ public class FragmentForecast extends Fragment
 	 * @param timestamp number of seconds since 1/1/1970
 	 * @return the current time in a date/time format
 	 */
-	private String formatDateTime(String timestamp) {
+	private String formatDateTime(String timestamp) 
+	{
 		Date date = new Date(Long.valueOf(timestamp)); 	
 		DateFormat dateFormat = new SimpleDateFormat("EEE MMM d, h:mm a", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
@@ -285,18 +300,20 @@ public class FragmentForecast extends Fragment
 	 * returned as null, we handle that as well by displaying some toast error.
 	 * This implements the IListeners interface.
 	 */
-	public class HandleWebCallListener implements IListeners {
-		
+	public class HandleWebCallListener implements IListeners 
+	{	
 		/**
 		 * Sets forecast location data from the api call to the screen
 		 * location object.
 		 * @param forecastLocation
 		 */
 		@Override
-		public void onLocationLoaded(ForecastLocation forecastLocation) {
+		public void onLocationLoaded(ForecastLocation forecastLocation) 
+		{
 			_forecastLocation = forecastLocation;
 			
-			if( forecastLocation.City != null ) {
+			if( forecastLocation.City != null ) 
+			{
 				_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
 			}
 		}
@@ -308,10 +325,12 @@ public class FragmentForecast extends Fragment
 		 * @return
 		 */
 		@Override
-		public void onForecastLoaded(Forecast forecast) {
+		public void onForecastLoaded(Forecast forecast) 
+		{
 			_forecast = forecast;
 	
-			if( forecast.ForecastDate != null ) {
+			if( forecast.ForecastDate != null ) 
+			{
 				// turn the loading screen off
 				_loadingScreen.setVisibility(View.GONE);
 				
@@ -335,7 +354,8 @@ public class FragmentForecast extends Fragment
 		 * Displays a toast error if the location was returned as null
 		 */
 		@Override
-		public void onLocationNotLoaded() {
+		public void onLocationNotLoaded() 
+		{
 			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 		}
 	
@@ -343,7 +363,8 @@ public class FragmentForecast extends Fragment
 		 * Displays a toast error if the forecast was returned as null
 		 */
 		@Override
-		public void onForecastNotLoaded() {
+		public void onForecastNotLoaded() 
+		{
 			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 		}
 	}
