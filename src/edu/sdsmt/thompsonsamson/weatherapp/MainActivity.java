@@ -38,6 +38,8 @@ public class MainActivity extends Activity
      * The onCreate function loads the bundle if and sets the view for the main activity.
      * We also load the zip code from an array to pass to the showForecast function.  The showForecast 
      * function is only called if there is data in the bundle to prevent null exceptions.  
+     * 
+     * @param savedInstanceState bundle data if exists from a previous state
      */
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -56,10 +58,11 @@ public class MainActivity extends Activity
 	}
 
 	/**
-	 * The showForecast function will instancite a new fragementManager set the zipcode parameter to
-	 * the bundle.  It will then instanciate a fragmentForecast and pass in the bundle as it's arguments.
+	 * The showForecast function will instantiate a new fragment manager and 
+	 * set the zip code parameter to the bundle.  It will then create the fragment 
+	 * forecast view, pass in the bundle as it's arguments and start the view.
 	 * 
-	 * @param zipCode the zip code for the foredcast
+	 * @param zipCode the zip code for the forecast
 	 */
 	private void showForecast(String zipCode)
 	{	

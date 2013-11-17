@@ -16,33 +16,48 @@ import android.util.Log;
 import edu.sdsmt.thompsonsamson.weatherapp.IListeners;
 
 /**
+ * <p>This is the forecast model object for the weather application. Contained in
+ * this object are the current forecast data including temperature, what it
+ * feels like (with wind chill, etc), humidity, chance of precipitation, current
+ * conditions and an icon depicting the current weather.</p> 
+ * 
+ * <p>The AsyncTask is included here that will fetch the JSON data from Weatherbug's
+ * API, then parse the needed data from it. Since we are using the GetHourlyForecast
+ * from Weatherbug, it returns all of the hourly data for the next 7 days. We are
+ * only interested in the first one which is the most recent forecast for the current hour.
+ * This is done in the background and won't affect the main ui thread.</p>
+ * 
+ * <p>This object also implements parcelable so it can be placed into an activity's
+ * bundle for state retention.</p>
  * 
  * @author Andrew Thompson
  * @author Scott Samson
- *
  */
 public class Forecast implements Parcelable
 {
-
+	// logging tag
 	private static final String TAG = "Assignment3:Forecast";
 	
-	public String Icon;
-	public String Conditions;
-	public String Temperature;
-	public String FeelsLike;
-	public String Humidity;
-	public String ChancePrecip;
-	public String ForecastDate;
-	public Bitmap Image;
+	// class members
+	public String Icon;			// the string representing what weather icon to use
+	public String Conditions;	// the current conditions
+	public String Temperature;	// the temperature
+	public String FeelsLike;	// what the temperature actually feels like
+	public String Humidity;		// the humidity
+	public String ChancePrecip;	// the chance of precipitation
+	public String ForecastDate;	// the date (within the hour) of the forecast
+	public Bitmap Image;		// the bitmap image representing current conditions
 	
+	// the URL to Weatherbug's hourly forecast data
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetForecastHourly.ashx?zip=" + "%s" + 
 	                      "&ht=t&ht=i&ht=cp&ht=fl&ht=h" + 
 	                      "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
-			
+	
+	// the URL to Weatherbug's forecast images
 	private String _imageURL = "http://img.weather.weatherbug.com/forecast/icons/localized/500x420/en/trans/%s.png";
 	
 	/**
-	 * 
+	 * Forecast constructor. Sets everything to null upon creation.
 	 */
 	public Forecast()
 	{
@@ -57,7 +72,9 @@ public class Forecast implements Parcelable
 	}
 
 	/**
-	 * 
+	 * Forecast constructor from parcel data. This constructs an object based on
+	 * the data saved in a parcel object. This is used for state retention.
+	 *  
 	 * @param parcel
 	 */
 	public Forecast(Parcel parcel)
@@ -73,7 +90,7 @@ public class Forecast implements Parcelable
 	}
 
 	/**
-	 * 
+	 * This method isn't used but is required in the overriding of parcel implementation
 	 */
 	@Override
 	public int describeContents()
