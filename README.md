@@ -7,4 +7,4 @@ Mobile Development - Program 3<br>
 </p>
 
 <b>Weather Application for Android.</b><br>
-This project uses fragments, SQLite database model, listeners and a web API to weatherbug.
+This project uses fragments, listeners and an asyntask to call a web API that fetches data from weatherbug.
