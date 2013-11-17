@@ -20,21 +20,11 @@ import edu.sdsmt.thompsonsamson.weatherapp.view.FragmentForecast;
  * <p>
  * Main entry to the application.  The fragment manager, bundle and view are created here.
  * We will create an instance of the fragementForecast object and set it's arguments to the
- * bundle contents.  A zipcode for the location area is hardcoded into the bundle.  The bundle
- * is then passed to the newley created fragment view.
+ * bundle contents.  A zip code for the location area is hard coded into the bundle.  The bundle
+ * is then passed to the newly created fragment view.
  * <p>
  * <a href="https://github.com/amthompson/CSC421-Assignment3">GitHub Repository</a>
- * <p>
- * Timeline:
- * <ul>
- *                 <li>10/19/2013:        Initial project creation and repo (AT)</li>
- *                 <li>10/20/2013: Coding session (database/fragments) (AT&SS)</li>
- *                 <li>10/21/2013: Fragment detail work (AT)</li>
- *                 <li>10/23/2013: Fixed orientation bug (AT)</li>
- *                 <li>10/27/2013:        Coding Session - Fixed onResume bug, added alerts, 
- *                                                 testing and documentation (AT&SS)</li>
- *                 <li>10/28/2013:  Finalize comments and host docs and code</li>
- * </ul>
+ * 
  * @author Andrew Thompson
  * @author Scott Samson
  */
@@ -45,9 +35,9 @@ public class MainActivity extends Activity
     private String[] _citiesArray;							// list of zip codes
     
     /**
-     * The onCreate funciton loads the bundle if and sets the view for the main activity.
+     * The onCreate function loads the bundle if and sets the view for the main activity.
      * We also load the zip code from an array to pass to the showForecast function.  The showForecast 
-     * function is only called if there is data in the bundle to prevent null exeptions.  
+     * function is only called if there is data in the bundle to prevent null exceptions.  
      */
 	@Override
 	protected void onCreate(Bundle savedInstanceState)

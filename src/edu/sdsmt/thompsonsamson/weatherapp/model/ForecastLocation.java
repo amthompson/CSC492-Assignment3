@@ -16,9 +16,9 @@ import android.util.JsonReader;
 import android.util.Log;
 
 /**
- * Model class for forcast loction.  We implement the Parcelable interface in order to be able
+ * Model class for forecast location.  We implement the Parcelable interface in order to be able
  * to save data in the bundle.  This class is responsible for running the async task to load the 
- * forcast data from the weatherbug api.  
+ * forecast data from the weatherbug api.  
  * 
  * @author Andrew Thompson
  * @author Scott Samson
@@ -48,7 +48,7 @@ public class ForecastLocation implements Parcelable
 	}
 	
 	/**
-	 * Reads in forecast location data from the parcel.
+	 * Reads in forecast location data from the parcel object.
 	 * 
 	 * @param parcel parcel to read data from
 	 */
@@ -69,7 +69,7 @@ public class ForecastLocation implements Parcelable
 	}
 
 	/**
-	 * Override to save ForecastLocation objects to a bundle.  Requried to implement the parcelable 
+	 * Override to save ForecastLocation objects to a bundle.  Required to implement the parcelable 
 	 * interface.  
 	 * 
 	 * @params parcel parcel to be written to
@@ -230,7 +230,9 @@ public class ForecastLocation implements Parcelable
 		}
 		
 		/**
-		 * Returns the forecast location to the main activity listener
+		 * Returns the forecast location to the main activity listener.
+		 * If the forecast location is null, return to the listener that the
+		 * location wasn't loaded otherwise send the object to the listener.
 		 * 
 		 * @param forecastLocation the location returned from the API call
 		 */
@@ -239,12 +241,11 @@ public class ForecastLocation implements Parcelable
 		{
 			super.onPostExecute(forecastLocation);
 			
-			if( forecastLocation == null )
-			{
+			// handle the null object or return if exists
+			if( forecastLocation == null ) {
 				_listener.onLocationNotLoaded();
 			}
-			else 
-			{
+			else {
 				_listener.onLocationLoaded(forecastLocation);	
 			}
 			

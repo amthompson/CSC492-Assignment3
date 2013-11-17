@@ -110,7 +110,7 @@ public class FragmentForecast extends Fragment
 
 	/**
 	 * Creates the view and sets the layout.  Objects are inflated to their position specified
-	 * in the R file with the object inflator paramter.
+	 * in the R file with the object inflater parameter.
 	 * 
 	 * @param inflater inflates fragment according to the layout specified
 	 * @param container container for a group of views

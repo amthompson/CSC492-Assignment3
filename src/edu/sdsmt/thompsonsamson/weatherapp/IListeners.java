@@ -1,14 +1,13 @@
 /**
-* Project Assignment3 Address Book - I Listener Interface
+* Project Assignment3 Address Book - Listener Interface
 */
 package edu.sdsmt.thompsonsamson.weatherapp;
 
 import edu.sdsmt.thompsonsamson.weatherapp.model.Forecast;
 import edu.sdsmt.thompsonsamson.weatherapp.model.ForecastLocation;
+
 /**
 * This class provides an interface for the Forecast and Forecast Location classes.
-* 
-* @ author Brian Butterfield
 */
 public interface IListeners
 {
