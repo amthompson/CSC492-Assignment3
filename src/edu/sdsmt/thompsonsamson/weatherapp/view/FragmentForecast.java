@@ -1,3 +1,6 @@
+/**
+* Project Assignment3 Weather App- Fragment Forecast
+*/
 package edu.sdsmt.thompsonsamson.weatherapp.view;
 
 import java.text.DateFormat;
@@ -11,7 +14,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +30,9 @@ import edu.sdsmt.thompsonsamson.weatherapp.model.Forecast.LoadForecast;
 import edu.sdsmt.thompsonsamson.weatherapp.model.ForecastLocation.LoadForecastLocation;
 
 /**
+ * Class for displaying the forecast and forecast location.  Api calls to model objects are
+ * also handled here with an inner class called HandleAPICallListener.  Fragment lifecycle 
+ * operations with the bundle are also handled here.  
  * 
  * @author Andrew Thompson
  * @author Scott Samson
@@ -40,27 +45,29 @@ public class FragmentForecast extends Fragment
 	public static final String LOCATION_KEY = "key_location";
 	public static final String FORECAST_KEY = "key_forecast";
 	
-	private String ZipCode = null;
-	private ForecastLocation _forecastLocation;
-	private Forecast _forecast;
+	private String ZipCode = null;						// zipcode to get forecast
+	private ForecastLocation _forecastLocation;			// object location of forecast
+	private Forecast _forecast;							// object for weather forecast
 
-	private HandleWebCallListener _webRequest;
-	private LoadForecastLocation _loadForecastLocation;
-	private LoadForecast _loadForecast;
+	private HandleWebCallListener _webRequest;			// class to handle asynctasks
+	private LoadForecastLocation _loadForecastLocation;	// api call for location
+	private LoadForecast _loadForecast;					// api call for forecast
 	
-	private ScrollView _forecastData;
-	private RelativeLayout _loadingScreen;
+	private ScrollView _forecastData;					// ui container for forecast
+	private RelativeLayout _loadingScreen;				// spinning wheel for loading
 	
-	private ImageView _imageIcon;
-	private TextView _textLocation;
-	private TextView _textConditions;
-	private TextView _textTemperature;
-	private TextView _textFeelsLike;
-	private TextView _textHumidity;
-	private TextView _textPrecip;
-	private TextView _textTime;
-	
+	private ImageView _imageIcon;						// forecast image
+	private TextView _textLocation;						// forecast location text
+	private TextView _textConditions;					// current conditions text
+	private TextView _textTemperature;					// temperature text
+	private TextView _textFeelsLike;					// feels like text
+	private TextView _textHumidity;						// humidity text
+	private TextView _textPrecip;						// precipitation text
+	private TextView _textTime;							// time of forecast test
+		
 	/**
+	 * Creates the forecast and forecast location model objects.  If the bundle is not 
+	 * null ZipCode is loaded from it.
 	 * 
 	 * @param argumentsBundle Bundle data passed from main activity to fragment
 	 */
@@ -72,19 +79,22 @@ public class FragmentForecast extends Fragment
 		// get the bundle data saved to the fragment
 		argumentsBundle = getArguments();
 		
+		// create the web api class
 		_webRequest = new HandleWebCallListener();
 		
 		// define data models for location and forecast
 		_forecastLocation = new ForecastLocation();
 		_forecast = new Forecast();
 
-		// if the bundled data isn't empty, set the class member
+		// if the bundled data isn't empty, get the zip code for the 
+		// forecast that was passed in from parent activity 
 		if (argumentsBundle != null) {
 			ZipCode = argumentsBundle.getString("ZIP_CODE");
 		}
 	}
 
 	/**
+	 * Saves the current forecast and forecast location data to the bundle.
 	 * 
 	 * @param savedInstanceStateBundle
 	 */
@@ -93,16 +103,19 @@ public class FragmentForecast extends Fragment
 	{		
 		super.onSaveInstanceState(savedInstanceStateBundle);
 		
-		// save location to the bundle
+		// save location nd forecast to the bundle
 		savedInstanceStateBundle.putParcelable(LOCATION_KEY, _forecastLocation);
 		savedInstanceStateBundle.putParcelable(FORECAST_KEY, _forecast);
 	}
 
 	/**
+	 * Creates the view and sets the layout.  Objects are inflated to their position specified
+	 * in the R file with the object inflator paramter.
 	 * 
-	 * @param inflater
-	 * @param container
-	 * @param savedInstanceStateBundle
+	 * @param inflater inflates fragment according to the layout specified
+	 * @param container container for a group of views
+	 * @param savedInstanceStateBundle bundle of data from previous instances
+	 * @return
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -121,12 +134,15 @@ public class FragmentForecast extends Fragment
 	}
 	
 	/**
+	 * Creates the activity and gets forecast and forecast location data from the api.  
+	 * We will notify the user if there is no network connectivity.  Data is loaded 
+	 * from previous instances from the bundle here also.
 	 * 
-	 * @param savedInstanceStateBundle
+	 * @param savedInstanceStateBundle bundle to load data from
+	 * @param v The view to display the objects in
 	 */
 	@Override
-	public void onActivityCreated(Bundle savedInstanceStateBundle)
-	{
+	public void onActivityCreated(Bundle savedInstanceStateBundle) {
 		super.onActivityCreated(savedInstanceStateBundle);
 		
 		// restore data from bundle
@@ -137,11 +153,10 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
-	 * 
+	 * Calls onDestroy in the parent object.
 	 */
 	@Override
-	public void onPause()
-	{
+	public void onPause() {
 		super.onPause();
 		stopTasks();
 	}
@@ -150,8 +165,7 @@ public class FragmentForecast extends Fragment
 	 * 
 	 */
 	@Override
-	public void onResume()
-	{
+	public void onResume() {
 		super.onResume();
 		
 		if( ZipCode != null) {
@@ -170,18 +184,18 @@ public class FragmentForecast extends Fragment
 	 * 
 	 */
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		super.onDestroy();
 		stopTasks();
 	}
 
 	/**
+	 * Sets up the textViews for the view.  This hides the view while loading data and sets 
+	 * up the objects.
 	 * 
-	 * @param v
+	 * @param v The view to display the objects in
 	 */
-	private void configureTextFields(View v)
-	{
+	private void configureTextFields(View v) {
 		// loading screen
 		_loadingScreen = (RelativeLayout) v.findViewById(R.id.layoutProgress);
 				
@@ -201,11 +215,14 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
+	 * Returns true or false based on the device's network connectivity.
+	 * Sets up the textViews for the view.  This hides the view while loading data and sets 
+	 * up the objects.
 	 * 
-	 * @return
+	 * @return true return true if network connected
+	 * @return false return false if network not connected
 	 */
-	private boolean networkOnline() 
-	{
+	private boolean networkOnline() {
 		ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		
@@ -219,8 +236,7 @@ public class FragmentForecast extends Fragment
 	/**
 	 * 
 	 */
-	private void stopTasks() 
-	{
+	private void stopTasks() {
 		// if the asynctasks are still running, kill it
 		if( _loadForecastLocation.getStatus() == Status.RUNNING) {
 			_loadForecastLocation.cancel(true);
@@ -232,32 +248,35 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
+	 * Takes a string with the number of seconds in epoch time and returns a string with the time
+	 * in a date/time format based on the the timestamp parameter.  
 	 * 
-	 * @param timestamp
-	 * @return
+	 * @param timestamp number of seconds since 1/1/1970
+	 * @return the current time in a date/time format
 	 */
-	private String formatDateTime(String timestamp)
-	{
+	private String formatDateTime(String timestamp) {
 		Date date = new Date(Long.valueOf(timestamp)); 	
 		DateFormat dateFormat = new SimpleDateFormat("EEE MMM d, h:mm a", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
 		return dateFormat.format(date);
 	}
-
+	
 	/**
+	 * Handles the api calls to the model objects _forecast and _forecastLocation.
+	 * This implements the IListeners interface.
 	 * 
 	 * @author Andrew Thompson
 	 *
 	 */
-	public class HandleWebCallListener implements IListeners
-	{
+	public class HandleWebCallListener implements IListeners {
+		
 		/**
-		 * 
+		 * Sets forecast location data from the api call to the screen
+		 * location element.
 		 * @param forecastLocation
 		 */
 		@Override
-		public void onLocationLoaded(ForecastLocation forecastLocation) 
-		{
+		public void onLocationLoaded(ForecastLocation forecastLocation) {
 			_forecastLocation = forecastLocation;
 			
 			if( forecastLocation.City != null ) {
@@ -266,12 +285,13 @@ public class FragmentForecast extends Fragment
 		}
 	
 		/**
-		 * 
+		 * Sets forecast data from the api call to the forecast screen 
+		 * elements if it was loaded correctly.
 		 * @param forecast
+		 * @return
 		 */
 		@Override
-		public void onForecastLoaded(Forecast forecast) 
-		{
+		public void onForecastLoaded(Forecast forecast) {
 			_forecast = forecast;
 	
 			if( forecast.ForecastDate != null ) {
@@ -294,15 +314,19 @@ public class FragmentForecast extends Fragment
 			}
 		}
 	
+		/**
+		 * 
+		 */
 		@Override
-		public void onLocationNotLoaded()
-		{
+		public void onLocationNotLoaded() {
 			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 		}
 	
+		/**
+		 * 
+		 */
 		@Override
-		public void onForecastNotLoaded()
-		{
+		public void onForecastNotLoaded() {
 			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 		}
 	}

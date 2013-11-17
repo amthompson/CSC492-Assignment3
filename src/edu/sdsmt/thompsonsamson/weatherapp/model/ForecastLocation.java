@@ -1,3 +1,6 @@
+/**
+* Project Assignment3 Weather App - Forecast Location
+*/
 package edu.sdsmt.thompsonsamson.weatherapp.model;
 
 import java.io.IOException;
@@ -13,6 +16,9 @@ import android.util.JsonReader;
 import android.util.Log;
 
 /**
+ * Model class for forcast loction.  We implement the Parcelable interface in order to be able
+ * to save data in the bundle.  This class is responsible for running the async task to load the 
+ * forcast data from the weatherbug api.  
  * 
  * @author Andrew Thompson
  * @author Scott Samson
@@ -31,7 +37,7 @@ public class ForecastLocation implements Parcelable
 			             "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
 		
 	/**
-	 * 
+	 * Initializes forecast location data.
 	 */
 	public ForecastLocation()
 	{
@@ -42,8 +48,9 @@ public class ForecastLocation implements Parcelable
 	}
 	
 	/**
+	 * Reads in forecast location data from the parcel.
 	 * 
-	 * @param parcel
+	 * @param parcel parcel to read data from
 	 */
 	public ForecastLocation(Parcel parcel)
 	{
@@ -54,7 +61,7 @@ public class ForecastLocation implements Parcelable
 	}
 	
 	/**
-	 * 
+	 * Unused method that must be overridden to implement the Parcelable interface.
 	 */
 	@Override
 	public int describeContents() {
@@ -62,7 +69,11 @@ public class ForecastLocation implements Parcelable
 	}
 
 	/**
+	 * Override to save ForecastLocation objects to a bundle.  Requried to implement the parcelable 
+	 * interface.  
 	 * 
+	 * @params parcel parcel to be written to
+	 * @params flags optional flags to set
 	 */
 	@Override
 	public void writeToParcel(Parcel parcel, int flags) {
@@ -73,15 +84,25 @@ public class ForecastLocation implements Parcelable
 	}
 
 	/**
-	 * 
+	 * Anonymous inner class that creates a parcelable object.  
 	 */
 	public static final Parcelable.Creator<ForecastLocation> CREATOR = new Parcelable.Creator<ForecastLocation>() 
 	{
+		/**
+		 * Returns a new ForecastLocation with data from the parcel.
+		 * 
+		 * @params source parcel to be loaded from
+		 */
 		@Override
 		public ForecastLocation createFromParcel(Parcel source) {
 			return new ForecastLocation(source);
 		}
 
+		/**
+		 * Returns an array of ForecastLocations in length equal to the size param.
+		 * 
+		 * @params size size of the array to be returned
+		 */
 		@Override
 		public ForecastLocation[] newArray(int size) {
 			return new ForecastLocation[size];
@@ -89,6 +110,7 @@ public class ForecastLocation implements Parcelable
 	};
 	
 	/**
+	 * Class to load forecast location data.  
 	 * 
 	 * @author Scott Samson
 	 *
@@ -98,9 +120,10 @@ public class ForecastLocation implements Parcelable
 		private IListeners _listener;
 		
 		/**
+		 * Loads the listener from main activity.
 		 * 
-		 * @param context
-		 * @param listener
+		 * @param context main acivity context
+		 * @param listener main activity lisetener
 		 */
 		public LoadForecastLocation(IListeners listener)
 		{
@@ -108,8 +131,11 @@ public class ForecastLocation implements Parcelable
 		}
 		
 		/**
+		 * Anonymous inner class used to do async task.  We create a new URL object and reader
+		 * to read from the URL.  The URL string is sent via params.  The next step is to parse
+		 * the JSON data with a JSONReader.  
 		 * 
-		 * @param params
+		 * @param params set of parameters for the async task
 		 * 
 		 */
 		@Override
@@ -204,7 +230,8 @@ public class ForecastLocation implements Parcelable
 		}
 		
 		/**
-		 * Returns the forecast location to the listener
+		 * Returns the forecast location to the main activity listener
+		 * 
 		 * @param forecastLocation the location returned from the API call
 		 */
 		@Override
