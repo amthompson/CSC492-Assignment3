@@ -57,7 +57,7 @@ public class Forecast implements Parcelable
 	private String _imageURL = "http://img.weather.weatherbug.com/forecast/icons/localized/500x420/en/trans/%s.png";
 	
 	/**
-	 * Forecast constructor. Sets everything to null upon creation.
+	 * Initializes forecast data.
 	 */
 	public Forecast()
 	{
@@ -72,8 +72,7 @@ public class Forecast implements Parcelable
 	}
 
 	/**
-	 * Forecast constructor from parcel data. This constructs an object based on
-	 * the data saved in a parcel object. This is used for state retention.
+	 * Reads in forecast data from the parcel object.
 	 *  
 	 * @param parcel
 	 */
@@ -90,7 +89,7 @@ public class Forecast implements Parcelable
 	}
 
 	/**
-	 * This method isn't used but is required in the overriding of parcel implementation
+	 * Unused method that must be overridden to implement the Parcelable interface.
 	 */
 	@Override
 	public int describeContents()
@@ -99,9 +98,11 @@ public class Forecast implements Parcelable
 	}
 
 	/**
+	 * Override to save ForecastLocation objects to a bundle.  Required to implement the parcelable 
+	 * interface.
 	 * 
-	 * @param parcel
-	 * @param flags
+	 * @param parcel parcel to be written to
+	 * @param flags optional flags to set
 	 */
 	@Override
 	public void writeToParcel(Parcel parcel, int flags)
@@ -117,15 +118,27 @@ public class Forecast implements Parcelable
 	}
 
 	/**
-	 * 
+	 * Anonymous inner class that creates a parcelable object.  
 	 */
 	public static final Parcelable.Creator<Forecast> CREATOR = new Parcelable.Creator<Forecast>()
 	{
+		/**
+		 * Returns a new Forecast object with data from the parcel.
+		 * 
+		 * @params source parcel to be loaded from
+		 * @return a Forecast object
+		 */
 		@Override
 		public Forecast createFromParcel(Parcel source)	{
 			return new Forecast(source);
 		}
-		
+
+		/**
+		 * Returns an array of Forecast objects of a set size.
+		 * 
+		 * @params size size of the array to be returned
+		 * @return an array of ForecastLocation objects.
+		 */
 		@Override
 		public Forecast[] newArray(int size) {
 			return new Forecast[size];
@@ -133,9 +146,7 @@ public class Forecast implements Parcelable
 	};
 
 	/**
-	 * 
-	 * @author Scott Samson
-	 *
+	 * Anonymous inner class that handles an asynctask to load forecast data.
 	 */
 	public class LoadForecast extends AsyncTask<String, Void, Forecast> 
 	{
@@ -143,9 +154,10 @@ public class Forecast implements Parcelable
 		private int bitmapSampleSize = -1;
 		
 		/**
+		 * Class constructor. Sets the parent class listener object to the
+		 * activity that implemented the listener.
 		 * 
-		 * @param context
-		 * @param listener
+		 * @param listener main activity listener
 		 */
 		public LoadForecast(IListeners listener)
 		{
@@ -153,9 +165,12 @@ public class Forecast implements Parcelable
 		}
 
 		/**
+		 * We create a new URL object and reader to read from the URL. The URL 
+		 * string is sent via params.  The next step is to parse the JSON data 
+		 * with a JSONReader.  
 		 * 
-		 * @param params
-		 * @return
+		 * @param params set of parameters for the asynctask
+		 * @return a Forecast object
 		 */
 		protected Forecast doInBackground(String... params)
 		{
@@ -198,18 +213,23 @@ public class Forecast implements Parcelable
 				
 				jsonReader.beginObject();
 				
+				// read in the next name
 				String name = jsonReader.nextName();
 				
+				// if the name is hourly forecast, start parsing
 				if (name.equals("forecastHourlyList") == true) {
 					
-					jsonReader.beginArray();			
+					// read in the next object as a json array
+					jsonReader.beginArray();
 					jsonReader.beginObject();
 					
+					// loop through the json array checking names
 					while (jsonReader.hasNext()) {
-						
-						//jsonReader.beginObject();
+
+						// read in the name
 						name = jsonReader.nextName();
 						
+						// parse the data we want
 						if (name.equals("icon") == true) {
 							
 							forecast.Icon = jsonReader.nextString();
@@ -241,6 +261,7 @@ public class Forecast implements Parcelable
 					}
 				}
 				
+				// cleanup the json objects
 				jsonReader.endObject();
 				jsonReader.close();				
 			}
@@ -254,12 +275,16 @@ public class Forecast implements Parcelable
 				Log.e(TAG, e.toString());
 			}
 			
+			// return the forcast data (or null)
 			return forecast;
 		}
 				
 		/**
+		 * After the background activity is completed, the forecast is 
+		 * returned to the implemented listener.The listener will handle 
+		 * if the object is null or not.
 		 * 
-		 * @param forecast
+		 * @param forecast the forecast object returned from the API call
 		 */
 		protected void onPostExecute(Forecast forecast)
 		{
@@ -268,18 +293,26 @@ public class Forecast implements Parcelable
 		}
 		
 		/**
+		 * This method reads a bitmap from a remote url and returns it as a
+		 * bitmap object. This is used to hold the forecast image from
+		 * weatherbug's forecast data.
 		 * 
-		 * @param conditionString
-		 * @param bitmapSampleSize
-		 * @return
+		 * @param conditionString the icon to get form weatherbug
+		 * @param bitmapSampleSize the size of the image
+		 * @return a bitmap object parsed from the url
 		 */
 		private Bitmap readIconBitmap(String conditionString, int bitmapSampleSize)
 		{
+			// create a new bitmap object
 			Bitmap iconBitmap = null;
+			
+			// try to get the image from the weatherbug image url
 			try {
 				URL weatherURL = new URL(String.format(_imageURL, conditionString));
 
+				// build the bitmap if size is greater than -1
 				BitmapFactory.Options options = new BitmapFactory.Options();
+
 				if (bitmapSampleSize != -1)
 				{
 					options.inSampleSize = bitmapSampleSize;

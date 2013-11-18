@@ -103,8 +103,8 @@ public class FragmentForecast extends Fragment
 	 * 
 	 * @param inflater inflates fragment according to the layout specified
 	 * @param container container for a group of views
-	 * @param savedInstanceStateBundle bundle of data from previous instances
-	 * @return
+	 * @param savedInstanceState bundle of data from previous instances
+	 * @return the fragment forecast returned as a view object to the host activity
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -140,19 +140,18 @@ public class FragmentForecast extends Fragment
 	}
 
 	/**
-	 * Creates the activity and gets forecast and forecast location data from the api.  
-	 * We will notify the user if there is no network connectivity.  Data is loaded 
-	 * from previous instances from the bundle here also.
+	 * Creates the activity and checks if the forecast and location exist in the
+	 * bundle as a parcelable object. If they do, set the members to the bundle data
+	 * and populate the ui items. 
 	 * 
 	 * @param savedInstanceStateBundle bundle to load data from
-	 * @param v The view to display the objects in
 	 */
 	@Override
 	public void onActivityCreated(Bundle savedInstanceStateBundle) 
 	{
 		super.onActivityCreated(savedInstanceStateBundle);
 		
-		// restore data from bundle
+		// restore data from bundle and display information
 		if( savedInstanceStateBundle != null ) 
 		{			
 			_forecastLocation = savedInstanceStateBundle.getParcelable(LOCATION_KEY);

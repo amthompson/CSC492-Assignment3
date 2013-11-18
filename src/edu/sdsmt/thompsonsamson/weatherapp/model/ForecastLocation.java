@@ -16,9 +16,9 @@ import android.util.JsonReader;
 import android.util.Log;
 
 /**
- * Model class for forecast location.  We implement the Parcelable interface in order to be able
+ * <p>Model class for forecast location.  We implement the Parcelable interface in order to be able
  * to save data in the bundle.  This class is responsible for running the async task to load the 
- * forecast data from the weatherbug api.  
+ * forecast data from the weatherbug api.</p>
  * 
  * @author Andrew Thompson
  * @author Scott Samson
@@ -72,8 +72,8 @@ public class ForecastLocation implements Parcelable
 	 * Override to save ForecastLocation objects to a bundle.  Required to implement the parcelable 
 	 * interface.  
 	 * 
-	 * @params parcel parcel to be written to
-	 * @params flags optional flags to set
+	 * @param parcel parcel to be written to
+	 * @param flags optional flags to set
 	 */
 	@Override
 	public void writeToParcel(Parcel parcel, int flags) {
@@ -89,9 +89,10 @@ public class ForecastLocation implements Parcelable
 	public static final Parcelable.Creator<ForecastLocation> CREATOR = new Parcelable.Creator<ForecastLocation>() 
 	{
 		/**
-		 * Returns a new ForecastLocation with data from the parcel.
+		 * Returns a new ForecastLocation object with data from the parcel.
 		 * 
 		 * @params source parcel to be loaded from
+		 * @return a ForecastLocation object
 		 */
 		@Override
 		public ForecastLocation createFromParcel(Parcel source) {
@@ -99,9 +100,10 @@ public class ForecastLocation implements Parcelable
 		}
 
 		/**
-		 * Returns an array of ForecastLocations in length equal to the size param.
+		 * Returns an array of ForecastLocations of a set size.
 		 * 
 		 * @params size size of the array to be returned
+		 * @return an array of ForecastLocation objects.
 		 */
 		@Override
 		public ForecastLocation[] newArray(int size) {
@@ -110,20 +112,17 @@ public class ForecastLocation implements Parcelable
 	};
 	
 	/**
-	 * Class to load forecast location data.  
-	 * 
-	 * @author Scott Samson
-	 *
+	 * Anonymous inner class that handles an asynctask to load forecast location data.
 	 */
-	public class LoadForecastLocation extends AsyncTask<String, Integer, ForecastLocation>
+	public class LoadForecastLocation extends AsyncTask<String, Void, ForecastLocation>
 	{
 		private IListeners _listener;
 		
 		/**
-		 * Loads the listener from main activity.
+		 * Class constructor. Sets the parent class listener object to the
+		 * activity that implemented the listener.
 		 * 
-		 * @param context main acivity context
-		 * @param listener main activity lisetener
+		 * @param listener main activity listener
 		 */
 		public LoadForecastLocation(IListeners listener)
 		{
@@ -131,12 +130,12 @@ public class ForecastLocation implements Parcelable
 		}
 		
 		/**
-		 * Anonymous inner class used to do async task.  We create a new URL object and reader
-		 * to read from the URL.  The URL string is sent via params.  The next step is to parse
-		 * the JSON data with a JSONReader.  
+		 * We create a new URL object and reader to read from the URL. The URL 
+		 * string is sent via params.  The next step is to parse the JSON data 
+		 * with a JSONReader.  
 		 * 
-		 * @param params set of parameters for the async task
-		 * 
+		 * @param params set of parameters for the asynctask
+		 * @return A ForecastLocation object
 		 */
 		@Override
 		protected ForecastLocation doInBackground(String... params) {
@@ -230,11 +229,11 @@ public class ForecastLocation implements Parcelable
 		}
 		
 		/**
-		 * Returns the forecast location to the main activity listener.
-		 * If the forecast location is null, return to the listener that the
-		 * location wasn't loaded otherwise send the object to the listener.
+		 * After the background activity is completed, the forecast location 
+		 * is returned to the implemented listener.The listener will handle 
+		 * if the object is null or not.
 		 * 
-		 * @param forecastLocation the location returned from the API call
+		 * @param forecastLocation the location object returned from the API call
 		 */
 		@Override
 		protected void onPostExecute(ForecastLocation forecastLocation)
