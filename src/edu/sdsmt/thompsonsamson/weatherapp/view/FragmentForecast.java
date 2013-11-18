@@ -156,8 +156,16 @@ public class FragmentForecast extends Fragment
 		{			
 			_forecastLocation = savedInstanceStateBundle.getParcelable(LOCATION_KEY);
 			_forecast = savedInstanceStateBundle.getParcelable(FORECAST_KEY);
-			populateLocation();
-			populateForecast();
+			
+			if( _forecastLocation.City != null )
+			{
+				populateLocation();	
+			}
+			
+			if( _forecast.ForecastDate != null )
+			{
+				populateForecast();	
+			}
 		}
 	}
 

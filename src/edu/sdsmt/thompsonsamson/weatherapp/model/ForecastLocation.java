@@ -26,13 +26,16 @@ import android.util.Log;
  */
 public class ForecastLocation implements Parcelable
 {
+	// logging tag
 	private static final String TAG = "Assignment3:ForecastLocation";
 	
-	public String ZipCode;
-	public String City;
-	public String State;
-	public String Country;
+	// class members
+	public String ZipCode;	// location zip code
+	public String City;		// the city the location is at
+	public String State;	// the state the location is as
+	public String Country;	// the country the location is at
 	
+	// weatherbug api url
 	private String _URL = "http://i.wxbug.net/REST/Direct/GetLocation.ashx?zip=" + "%s" + 
 			             "&api_key=zhbc4u58vr5y5zfgpwwd3rfu";
 		
@@ -167,7 +170,7 @@ public class ForecastLocation implements Parcelable
 			}
 			
 			// set the reader to the stream
-			JsonReader jsonReader = new JsonReader(streamReader);
+			JsonReader jsonReader = new JsonReader(streamReader);			
 			forecastLocation = new ForecastLocation();
 			
 			// try catch to read json
@@ -219,9 +222,11 @@ public class ForecastLocation implements Parcelable
 			}
 			catch (IllegalStateException e) {
 				Log.e(TAG, e.toString());
+				return null;
 			}
 			catch (Exception e)	{
 				Log.e(TAG, e.toString());
+				return null;
 			}
 			
 			// return the object to parent class			

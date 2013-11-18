@@ -267,12 +267,15 @@ public class Forecast implements Parcelable
 			}
 			catch (IllegalStateException e)	{
 				Log.e(TAG, e.toString());
+				return null;
 			}
 			catch (IOException e) {
 				Log.e(TAG, e.toString());
+				return null;
 			}
 			catch (Exception e) {
 				Log.e(TAG, e.toString());
+				return null;
 			}
 			
 			// return the forcast data (or null)

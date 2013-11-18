@@ -15,7 +15,8 @@ import edu.sdsmt.thompsonsamson.weatherapp.view.FragmentForecast;
  * the weatherbug API.  This is done with a JSONReader to parse the JSON data.  
  * The temperature, felt temperature, humidity, chance of precipitation, and date
  * will be display along with an icon representing current conditions.  Conditions are only
- * displayed for one location.
+ * displayed for one location. The primary concept of this application was to learn the use of
+ * fragments, parcelables and asynctasks to run background threads seperate from the main ui.
  * </p>
  * <p>
  * Main entry to the application.  The fragment manager, bundle and view are created here.
