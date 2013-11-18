@@ -115,7 +115,7 @@ public class FragmentForecast extends Fragment
 		// check network connection
 		if ( !networkOnline() ) 
 		{
-			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_SHORT).show();
 		}
 		
 		// setup ui objects
@@ -424,7 +424,7 @@ public class FragmentForecast extends Fragment
 			}
 			else
 			{
-				Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+				Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_SHORT).show();
 			}
 		}
 	
@@ -447,7 +447,7 @@ public class FragmentForecast extends Fragment
 			}
 			else
 			{
-				Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();				
+				Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_SHORT).show();				
 			}
 		}
 	}
