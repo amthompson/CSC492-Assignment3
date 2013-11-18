@@ -239,16 +239,8 @@ public class ForecastLocation implements Parcelable
 		@Override
 		protected void onPostExecute(ForecastLocation forecastLocation)
 		{
-			super.onPostExecute(forecastLocation);
-			
-			// handle the null object or return if exists
-			if( forecastLocation == null ) {
-				_listener.onLocationNotLoaded();
-			}
-			else {
-				_listener.onLocationLoaded(forecastLocation);	
-			}
-			
+			super.onPostExecute(forecastLocation);			
+			_listener.onLocationLoaded(forecastLocation);	
 		}
 	}
 }

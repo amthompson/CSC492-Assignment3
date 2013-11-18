@@ -263,14 +263,8 @@ public class Forecast implements Parcelable
 		 */
 		protected void onPostExecute(Forecast forecast)
 		{
-			if( forecast == null)
-			{
-				_listener.onForecastNotLoaded();
-			}
-			else
-			{
-				_listener.onForecastLoaded(forecast);	
-			}
+			super.onPostExecute(forecast);
+			_listener.onForecastLoaded(forecast);	
 		}
 		
 		/**

@@ -38,7 +38,7 @@ import edu.sdsmt.thompsonsamson.weatherapp.model.ForecastLocation.LoadForecastLo
  * @author Scott Samson
  */
 public class FragmentForecast extends Fragment
-{
+{	
 	// keys for parcelable/bundle data
 	public static final String LOCATION_KEY = "key_location";
 	public static final String FORECAST_KEY = "key_forecast";
@@ -133,8 +133,8 @@ public class FragmentForecast extends Fragment
 	public void onSaveInstanceState(Bundle savedInstanceStateBundle) 
 	{		
 		super.onSaveInstanceState(savedInstanceStateBundle);
-			
-		// save location nd forecast to the bundle
+		
+		// save location and forecast to the bundle
 		savedInstanceStateBundle.putParcelable(LOCATION_KEY, _forecastLocation);
 		savedInstanceStateBundle.putParcelable(FORECAST_KEY, _forecast);
 	}
@@ -157,6 +157,8 @@ public class FragmentForecast extends Fragment
 		{			
 			_forecastLocation = savedInstanceStateBundle.getParcelable(LOCATION_KEY);
 			_forecast = savedInstanceStateBundle.getParcelable(FORECAST_KEY);
+			populateLocation();
+			populateForecast();
 		}
 	}
 
@@ -177,25 +179,67 @@ public class FragmentForecast extends Fragment
 	/**
 	 * Handle the fragment onResume event. This occurs right after creating the
 	 * view and whenever the device is rotated. This is where we decided to do
-	 * the api web calls to ensure the newest data is loaded.
+	 * the api web calls to ensure the newest data is loaded. If the location
+	 * is null, the asynctask will be executed to get that data. If the forecast
+	 * time is null or the system time is greater than the forecast time, a 
+	 * new asynctask will be executed for the forecast.
 	 */
 	@Override
 	public void onResume() 
 	{
 		super.onResume();
 		
-		if( ZipCode != null) 
+		// if there isn't a forecast location, execute the asynctask to get it
+		if( _forecastLocation.City == null ) 
 		{	
 			// make the api call to get the location data
 			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(_webRequest);
 			_loadForecastLocation.execute(ZipCode);
-	
+		}
+		
+		if( checkForecastTimestamp() )
+		{	
 			// make the api call to get the forecast data
 			_loadForecast = _forecast.new LoadForecast(_webRequest);
-			_loadForecast.execute(ZipCode);		
+			_loadForecast.execute(ZipCode);
 		}
 	}
 
+	/**
+	 * This method checks the current system timestamp and the forecast timestamp
+	 * to see if a new forecast should be generated. Android system time is in 
+	 * utc so need the timezone offseet before comparing. If the current time in
+	 * milliseconds minus the timezone offset is greater than the timestamp in
+	 * milliseconds send by weatherbug's api, then a true is returned and a
+	 * new forecast should be fetched.
+	 * @return
+	 */
+	private boolean checkForecastTimestamp()
+	{
+		// if the date is null - need to generate a new
+		// forecast anyways so return
+		if( _forecast.ForecastDate == null )
+		{
+			return true;
+		}
+		
+		// get the current time and forecast time in milliseconds
+		long currentTime = System.currentTimeMillis();
+		long forecastTime = Long.valueOf(_forecast.ForecastDate);
+		
+		// get the timezone offset
+		long tzDiff = TimeZone.getDefault().getOffset(currentTime);
+		
+		// if the current time (-difference) is greater than the forecase
+		// time, then return true to get a new forecast
+		if( ( currentTime - tzDiff ) > forecastTime )
+		{
+			return true;
+		}
+		
+		return false;
+	}	
+	
 	/**
 	 * Handle the fragment onDestroy event. This occurs when the app is closed.
 	 * Need to cancel any asynctasks that might be running. We do this to
@@ -237,6 +281,31 @@ public class FragmentForecast extends Fragment
 		_textTime = (TextView) v.findViewById(R.id.textViewAsOfTime);
 	}
 
+	private void populateLocation()
+	{
+		_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
+	}
+	
+	private void populateForecast()
+	{
+		// turn the loading screen off
+		_loadingScreen.setVisibility(View.GONE);
+		
+		// set the image
+		_imageIcon.setImageBitmap(_forecast.Image);
+		
+		// populate the text fields
+		_textConditions.setText(_forecast.Conditions);
+		_textTemperature.setText(_forecast.Temperature + "\u00B0 F");
+		_textFeelsLike.setText(_forecast.FeelsLike + "\u00B0 F");
+		_textHumidity.setText(_forecast.Humidity + "%");
+		_textPrecip.setText(_forecast.ChancePrecip + "%");
+		_textTime.setText(formatDateTime(_forecast.ForecastDate));
+		
+		// turn the forecast data on
+		_forecastData.setVisibility(View.VISIBLE);
+	}
+
 	/**
 	 * Returns true or false based on the device's network connectivity.
 	 * Sets up the textViews for the view.  This hides the view while loading data and sets 
@@ -267,13 +336,14 @@ public class FragmentForecast extends Fragment
 	 */
 	private void stopTasks() 
 	{
-		// if the asynctasks are still running, kill it
-		if( _loadForecastLocation.getStatus() == Status.RUNNING) 
+		// if the asynctask for location isn't null and still running, kill it
+		if( _loadForecastLocation != null && _loadForecastLocation.getStatus() == Status.RUNNING) 
 		{
 			_loadForecastLocation.cancel(true);
 		}
-		
-		if( _loadForecast.getStatus() == Status.RUNNING) 
+
+		// if the asynctask for forecast isn't null and still running, kill it
+		if( _loadForecast != null && _loadForecast.getStatus() == Status.RUNNING) 
 		{
 			_loadForecast.cancel(true);
 		}	
@@ -288,6 +358,13 @@ public class FragmentForecast extends Fragment
 	 */
 	private String formatDateTime(String timestamp) 
 	{
+		// handle null, just in case
+		if( timestamp == null )
+		{
+			return "Pending";
+		}
+		
+		// otherwise do the conversion
 		Date date = new Date(Long.valueOf(timestamp)); 	
 		DateFormat dateFormat = new SimpleDateFormat("EEE MMM d, h:mm a", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
@@ -303,69 +380,49 @@ public class FragmentForecast extends Fragment
 	public class HandleWebCallListener implements IListeners 
 	{	
 		/**
-		 * Sets forecast location data from the api call to the screen
-		 * location object.
+		 * Sets forecast location data from the api call to the class member 
+		 * and populate the io location fields. If the object was returned as
+		 * null, a toast error is displayed.
+		 * 
 		 * @param forecastLocation
 		 */
 		@Override
 		public void onLocationLoaded(ForecastLocation forecastLocation) 
 		{
-			_forecastLocation = forecastLocation;
-			
-			if( forecastLocation.City != null ) 
+			// if the location returns with a valid object, set it to the class
+			// member and populate the location fields. Otherwise toast error.
+			if( forecastLocation != null)
 			{
-				_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
+				_forecastLocation = forecastLocation;
+				populateLocation();
+			}
+			else
+			{
+				Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 			}
 		}
 	
 		/**
-		 * Sets forecast data from the api call to the forecast screen 
-		 * objects if it was loaded correctly.
+		 * Sets forecast data from the api call to the class member and 
+		 * populate the ui forecast fields. If the object was returned
+		 * as null, a toast error is displayed.
+		 * 
 		 * @param forecast
-		 * @return
 		 */
 		@Override
 		public void onForecastLoaded(Forecast forecast) 
 		{
-			_forecast = forecast;
-	
-			if( forecast.ForecastDate != null ) 
+			// if the forecast returns with a valid object, set it to the class
+			// member and populate the forecast fields. Otherwise toast error.
+			if( forecast != null ) 
 			{
-				// turn the loading screen off
-				_loadingScreen.setVisibility(View.GONE);
-				
-				// set the image
-				_imageIcon.setImageBitmap(_forecast.Image);
-				
-				// populate the text fields
-				_textConditions.setText(_forecast.Conditions);
-				_textTemperature.setText(_forecast.Temperature + "\u00B0 F");
-				_textFeelsLike.setText(_forecast.FeelsLike + "\u00B0 F");
-				_textHumidity.setText(_forecast.Humidity + "%");
-				_textPrecip.setText(_forecast.ChancePrecip + "%");
-				_textTime.setText(formatDateTime(_forecast.ForecastDate));
-				
-				// turn the forecast data on
-				_forecastData.setVisibility(View.VISIBLE);
+				_forecast = forecast;
+				populateForecast();
 			}
-		}
-	
-		/**
-		 * Displays a toast error if the location was returned as null
-		 */
-		@Override
-		public void onLocationNotLoaded() 
-		{
-			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
-		}
-	
-		/**
-		 * Displays a toast error if the forecast was returned as null
-		 */
-		@Override
-		public void onForecastNotLoaded() 
-		{
-			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
+			else
+			{
+				Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();				
+			}
 		}
 	}
 }
