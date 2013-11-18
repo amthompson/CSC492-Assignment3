@@ -111,15 +111,15 @@ public class FragmentForecast extends Fragment
 	{
 		// inflate the fragment to host activity
 		View rootView = inflater.inflate(R.layout.fragment_forecast, null);
-		
-		// setup ui objects
-		configureTextFields(rootView);
-		
+				
 		// check network connection
 		if ( !networkOnline() ) 
 		{
 			Toast.makeText(getActivity(), R.string.toastNetworkUnavaliable, Toast.LENGTH_LONG).show();
 		}
+		
+		// setup ui objects
+		configureTextFields(rootView);
 		
 		return rootView;
 	}
@@ -196,8 +196,11 @@ public class FragmentForecast extends Fragment
 			_loadForecastLocation = _forecastLocation.new LoadForecastLocation(_webRequest);
 			_loadForecastLocation.execute(ZipCode);
 		}
-		
-		if( checkForecastTimestamp() )
+
+		// need to check the timestamp of the forecast. if it is null, or
+		// the current time is greater than the forecast time, then a new
+		// forecast needs to get generated
+		if( checkForecastTimestamp() == true )
 		{	
 			// make the api call to get the forecast data
 			_loadForecast = _forecast.new LoadForecast(_webRequest);
@@ -205,41 +208,6 @@ public class FragmentForecast extends Fragment
 		}
 	}
 
-	/**
-	 * This method checks the current system timestamp and the forecast timestamp
-	 * to see if a new forecast should be generated. Android system time is in 
-	 * utc so need the timezone offseet before comparing. If the current time in
-	 * milliseconds minus the timezone offset is greater than the timestamp in
-	 * milliseconds send by weatherbug's api, then a true is returned and a
-	 * new forecast should be fetched.
-	 * @return
-	 */
-	private boolean checkForecastTimestamp()
-	{
-		// if the date is null - need to generate a new
-		// forecast anyways so return
-		if( _forecast.ForecastDate == null )
-		{
-			return true;
-		}
-		
-		// get the current time and forecast time in milliseconds
-		long currentTime = System.currentTimeMillis();
-		long forecastTime = Long.valueOf(_forecast.ForecastDate);
-		
-		// get the timezone offset
-		long tzDiff = TimeZone.getDefault().getOffset(currentTime);
-		
-		// if the current time (-difference) is greater than the forecase
-		// time, then return true to get a new forecast
-		if( ( currentTime - tzDiff ) > forecastTime )
-		{
-			return true;
-		}
-		
-		return false;
-	}	
-	
 	/**
 	 * Handle the fragment onDestroy event. This occurs when the app is closed.
 	 * Need to cancel any asynctasks that might be running. We do this to
@@ -281,11 +249,23 @@ public class FragmentForecast extends Fragment
 		_textTime = (TextView) v.findViewById(R.id.textViewAsOfTime);
 	}
 
+	/**
+	 * Helper function to set the location. Used in a couple areas, so
+	 * easier to set it here
+	 * @see FragmentForecast.HandleWebCallListener#onLocationLoaded(ForecastLocation)
+	 * @see #onActivityCreated(Bundle)
+	 */
 	private void populateLocation()
 	{
 		_textLocation.setText(_forecastLocation.City + ", " + _forecastLocation.State);
 	}
 	
+	/**
+	 * Helper function to set the forecast and display it. Used in a couple
+	 * areas, so used it as a seperate method.
+	 * @see FragmentForecast.HandleWebCallListener#onForecastLoaded(Forecast)
+	 * @see #onActivityCreated(Bundle)
+	 */
 	private void populateForecast()
 	{
 		// turn the loading screen off
@@ -309,8 +289,9 @@ public class FragmentForecast extends Fragment
 	/**
 	 * Returns true or false based on the device's network connectivity.
 	 * Sets up the textViews for the view.  This hides the view while loading data and sets 
-	 * up the objects.
+	 * up the objects. Called from onCreateView method.
 	 * 
+	 * @see #onCreateView(LayoutInflater, ViewGroup, Bundle)
 	 * @return true return true if network connected
 	 * @return false return false if network not connected
 	 */
@@ -333,6 +314,9 @@ public class FragmentForecast extends Fragment
 	 * Stops any currently running asynctasks. We do this when the view is paused
 	 * or destroyed to prevent zombie processes. The tasks are generally short
 	 * run anyways, but this at least keeps them cleaned up.
+	 * 
+	 * @see #onPause()
+	 * @see #onDestroy()
 	 */
 	private void stopTasks() 
 	{
@@ -354,7 +338,8 @@ public class FragmentForecast extends Fragment
 	 * in a date/time format based on the the timestamp parameter.  
 	 * 
 	 * @param timestamp number of seconds since 1/1/1970
-	 * @return the current time in a date/time format
+	 * @return The current time as a string in a date/time format
+	 * @see #populateForecast()
 	 */
 	private String formatDateTime(String timestamp) 
 	{
@@ -371,6 +356,40 @@ public class FragmentForecast extends Fragment
 		return dateFormat.format(date);
 	}
 	
+	/**
+	 * This method checks the current system timestamp and the forecast timestamp
+	 * to see if a new forecast should be generated. Android system time is in 
+	 * utc so need the timezone offseet before comparing. If the current time in
+	 * milliseconds minus the timezone offset is greater than the timestamp in
+	 * milliseconds send by weatherbug's api, then a true is returned and a
+	 * new forecast should be fetched.
+	 * @return true if new forecast needed, false if forecast not needed
+	 * @see #onResume()
+	 */
+	private boolean checkForecastTimestamp()
+	{
+		// if the date is null - need to generate a new
+		// forecast anyways so return
+		if( _forecast.ForecastDate == null )
+		{
+			return true;
+		}
+
+		// get the current time and timezone
+		TimeZone tz = TimeZone.getDefault();
+		long now = new Date().getTime();
+		
+		// get the current time and forecast time in milliseconds
+		// need to make sure that the current time adds the offset
+		// from utc (+/- based on current timezone)
+		long forecastTime = Long.valueOf(_forecast.ForecastDate);
+		long currentTime = now + tz.getOffset(now);
+		
+		// if the current time (-difference) is greater than the forecast
+		// time, then return true to get a new forecast
+		return currentTime > forecastTime;
+	}
+
 	/**
 	 * Handles calls back from the asynctasks. This will set the class members
 	 * to the model objects _forecast and _forecastLocation. If an object was
